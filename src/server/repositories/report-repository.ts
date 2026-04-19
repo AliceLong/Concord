@@ -1,6 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { hasSupabaseEnv, isDemoFallbackEnabled } from "@/lib/env";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import {
+  appendDemoTimelineEvent,
+  demoReportsStore,
+  listDemoReports
+} from "@/server/repositories/demo-store";
 import type { CareReport, ReportStatus, StructuredReport } from "@/types/report";
 
 interface CreateReportInput {
@@ -9,8 +14,6 @@ interface CreateReportInput {
   transcriptionRaw: string | null;
   createdBy: string | null;
 }
-
-const demoReports = new Map<string, CareReport>();
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -46,7 +49,7 @@ export async function createProcessingReport(input: CreateReportInput): Promise<
       updatedAt: nowIso()
     };
 
-    demoReports.set(report.id, report);
+    demoReportsStore.set(report.id, report);
     return report;
   }
 
@@ -72,7 +75,7 @@ export async function createProcessingReport(input: CreateReportInput): Promise<
 
 export async function getReportById(reportId: string): Promise<CareReport | null> {
   if (!hasSupabaseEnv() && isDemoFallbackEnabled()) {
-    return demoReports.get(reportId) ?? null;
+    return demoReportsStore.get(reportId) ?? null;
   }
 
   const supabase = getSupabaseAdmin();
@@ -95,12 +98,12 @@ export async function markReportReady(params: {
   reportText: string;
 }): Promise<void> {
   if (!hasSupabaseEnv() && isDemoFallbackEnabled()) {
-    const existing = demoReports.get(params.reportId);
+    const existing = demoReportsStore.get(params.reportId);
     if (!existing) {
       throw new Error(`Report not found: ${params.reportId}`);
     }
 
-    demoReports.set(params.reportId, {
+    demoReportsStore.set(params.reportId, {
       ...existing,
       status: "ready",
       transcriptionRaw: params.transcriptionRaw,
@@ -129,12 +132,12 @@ export async function markReportReady(params: {
 
 export async function markReportFailed(reportId: string, reason: string): Promise<void> {
   if (!hasSupabaseEnv() && isDemoFallbackEnabled()) {
-    const existing = demoReports.get(reportId);
+    const existing = demoReportsStore.get(reportId);
     if (!existing) {
       return;
     }
 
-    demoReports.set(reportId, {
+    demoReportsStore.set(reportId, {
       ...existing,
       status: "failed",
       reportText: reason,
@@ -164,6 +167,14 @@ export async function appendTimelineEvent(params: {
   detail: string | null;
 }): Promise<void> {
   if (!hasSupabaseEnv() && isDemoFallbackEnabled()) {
+    appendDemoTimelineEvent({
+      id: randomUUID(),
+      elderId: params.elderId,
+      eventType: params.eventType,
+      title: params.title,
+      detail: params.detail,
+      occurredAt: nowIso()
+    });
     return;
   }
 
@@ -178,4 +189,30 @@ export async function appendTimelineEvent(params: {
   if (error) {
     throw new Error(`Failed to append timeline event: ${error.message}`);
   }
+}
+
+export async function listReports(params?: {
+  elderId?: string;
+  limit?: number;
+}): Promise<CareReport[]> {
+  const limit = params?.limit ?? 24;
+
+  if (!hasSupabaseEnv() && isDemoFallbackEnabled()) {
+    return listDemoReports(params?.elderId).slice(0, limit);
+  }
+
+  const supabase = getSupabaseAdmin();
+  let query = supabase.from("care_reports").select("*").order("created_at", { ascending: false }).limit(limit);
+
+  if (params?.elderId) {
+    query = query.eq("elder_id", params.elderId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(`Failed to list reports: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => mapReport(row as Record<string, unknown>));
 }

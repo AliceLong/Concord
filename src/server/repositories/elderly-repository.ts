@@ -1,45 +1,12 @@
 import { hasSupabaseEnv, isDemoFallbackEnabled } from "@/lib/env";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import {
+  demoElders,
+  demoTimelineStore,
+  listDemoReports
+} from "@/server/repositories/demo-store";
 import type { CareReport } from "@/types/report";
 import type { ElderlyProfile, TimelineEvent } from "@/types/elderly";
-
-const demoElders: ElderlyProfile[] = [
-  {
-    id: "demo-elder-1",
-    fullName: "陈美玲",
-    roomNo: "A-302",
-    gender: "女",
-    birthDate: "1941-06-12",
-    riskLevel: "medium",
-    medicalNotes: "高血压，需按时服药",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: "demo-elder-2",
-    fullName: "李志强",
-    roomNo: "B-108",
-    gender: "男",
-    birthDate: "1938-11-04",
-    riskLevel: "high",
-    medicalNotes: "COPD，夜间血氧重点观察",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
-
-const demoTimeline: TimelineEvent[] = [
-  {
-    id: "demo-event-1",
-    elderId: "demo-elder-1",
-    eventType: "report_ready",
-    title: "日常照护记录完成",
-    detail: "今日精神稳定，午餐进食约7成。",
-    occurredAt: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString()
-  }
-];
-
-const demoReports: CareReport[] = [];
 
 function mapElder(row: Record<string, unknown>): ElderlyProfile {
   return {
@@ -110,10 +77,10 @@ export async function getElderWithContext(elderId: string): Promise<{
       return null;
     }
 
-    return {
+      return {
       elder,
-      reports: demoReports.filter((item) => item.elderId === elderId),
-      timeline: demoTimeline
+      reports: listDemoReports(elderId),
+      timeline: demoTimelineStore
         .filter((item) => item.elderId === elderId)
         .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
     };

@@ -6,6 +6,7 @@ import {
   createProcessingReport,
   getReportById
 } from "@/server/repositories/report-repository";
+import { getReportList } from "@/server/services/dashboard";
 import { processPendingReport } from "@/server/services/report-workflow";
 import { transcribeUploadedAudio } from "@/server/services/transcription";
 
@@ -35,6 +36,25 @@ async function uploadAudioToStorage(file: File, elderId: string): Promise<string
   }
 
   return objectPath;
+}
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const elderId = searchParams.get("elderId") ?? undefined;
+    const limitParam = searchParams.get("limit");
+    const limit = limitParam ? Number(limitParam) : undefined;
+
+    const reports = await getReportList({
+      elderId,
+      limit: Number.isFinite(limit) ? limit : undefined
+    });
+
+    return NextResponse.json({ reports });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {

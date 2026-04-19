@@ -2,6 +2,11 @@
 
 面向护工的云端 WebApp MVP：将每日照护语音记录转写为结构化报告，并与老人资料形成可追溯时间线。
 
+开发文档入口：
+
+- 技术文档：`docs/technical-guide.md`
+- 架构概览：`docs/architecture.md`
+
 ## 1. 技术框架（已按你确认方案搭好骨架）
 - 前端与后端：`Next.js + TypeScript`（单仓库）
 - 数据库与存储：`Supabase Postgres + Storage`

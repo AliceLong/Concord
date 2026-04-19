@@ -7,6 +7,39 @@ interface VoiceReportFormProps {
   elderId: string;
 }
 
+const preferredMimeTypes = [
+  "audio/webm;codecs=opus",
+  "audio/webm",
+  "audio/mp4",
+  "audio/ogg;codecs=opus",
+  "audio/ogg"
+] as const;
+
+function getSupportedAudioMimeType(): string | null {
+  if (typeof MediaRecorder === "undefined") {
+    return null;
+  }
+
+  if (typeof MediaRecorder.isTypeSupported !== "function") {
+    return null;
+  }
+
+  for (const mimeType of preferredMimeTypes) {
+    if (MediaRecorder.isTypeSupported(mimeType)) {
+      return mimeType;
+    }
+  }
+
+  return null;
+}
+
+function extensionFromMimeType(mimeType: string): string {
+  if (mimeType.includes("webm")) return "webm";
+  if (mimeType.includes("ogg")) return "ogg";
+  if (mimeType.includes("mp4")) return "m4a";
+  return "bin";
+}
+
 export function VoiceReportForm({ elderId }: VoiceReportFormProps) {
   const [noteText, setNoteText] = useState("");
   const [createdBy, setCreatedBy] = useState("护工A");
@@ -27,8 +60,15 @@ export function VoiceReportForm({ elderId }: VoiceReportFormProps) {
     setSuccess(null);
 
     try {
+      if (typeof MediaRecorder === "undefined") {
+        throw new Error("当前浏览器不支持录音，请改用 Chrome/Edge，或先手工输入备注。");
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      const supportedMimeType = getSupportedAudioMimeType();
+      const recorder = supportedMimeType
+        ? new MediaRecorder(stream, { mimeType: supportedMimeType })
+        : new MediaRecorder(stream);
 
       chunksRef.current = [];
       recorder.ondataavailable = (event) => {
@@ -38,7 +78,8 @@ export function VoiceReportForm({ elderId }: VoiceReportFormProps) {
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        const mimeType = recorder.mimeType || supportedMimeType || "audio/webm";
+        const blob = new Blob(chunksRef.current, { type: mimeType });
         setRecordedBlob(blob);
         stream.getTracks().forEach((track) => track.stop());
       };
@@ -90,8 +131,10 @@ export function VoiceReportForm({ elderId }: VoiceReportFormProps) {
       }
 
       if (recordedBlob) {
-        const file = new File([recordedBlob], `care-${Date.now()}.webm`, {
-          type: "audio/webm"
+        const mimeType = recordedBlob.type || "application/octet-stream";
+        const extension = extensionFromMimeType(mimeType);
+        const file = new File([recordedBlob], `care-${Date.now()}.${extension}`, {
+          type: mimeType
         });
         formData.set("audio", file);
       }
