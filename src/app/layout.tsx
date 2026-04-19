@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Concord Care CRM",
-  description: "老人照护语音记录与结构化报告系统"
+  title: "Concord Demo",
+  description: "Home -> Report 的最小语音记录验证流程"
 };
 
 export default function RootLayout({

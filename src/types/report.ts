@@ -5,31 +5,26 @@ export const reportStructuredSchema = z.object({
   appetite: z.enum(["good", "normal", "poor", "unknown"]),
   sleep: z.enum(["good", "normal", "poor", "unknown"]),
   mobility: z.enum(["independent", "assisted", "bedridden", "unknown"]),
-  vitals: z.object({
-    temperatureC: z.number().nullable(),
-    bloodPressure: z.string().nullable(),
-    heartRate: z.number().nullable(),
-    bloodOxygen: z.number().nullable()
-  }),
   symptoms: z.array(z.string()),
   riskFlags: z.array(z.string()),
   interventions: z.array(z.string()),
-  handover: z.string()
+  handover: z.string(),
+  summary: z.string()
 });
 
 export type StructuredReport = z.infer<typeof reportStructuredSchema>;
 
-export type ReportStatus = "processing" | "ready" | "failed";
+export interface AsrTranscription {
+  transcript: string;
+  model: string | null;
+}
 
-export interface CareReport {
-  id: string;
+export interface GeneratedReport {
   elderId: string;
-  status: ReportStatus;
-  audioPath: string | null;
-  transcriptionRaw: string | null;
-  reportStructured: StructuredReport | null;
-  reportText: string | null;
-  createdBy: string | null;
-  createdAt: string;
-  updatedAt: string;
+  transcript: string;
+  sessionDate: string | null;
+  reportStructured: StructuredReport;
+  reportText: string;
+  generatedAt: string;
+  model: string | null;
 }
