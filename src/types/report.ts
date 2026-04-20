@@ -19,6 +19,27 @@ export interface AsrTranscription {
   model: string | null;
 }
 
+export interface AudioInputMetadata {
+  mimeType?: string;
+  sampleRateHertz?: number;
+  audioChannelCount?: number;
+}
+
+export interface AsrStreamSession {
+  sessionId: string;
+  model: string | null;
+}
+
+export interface AsrStreamEvent {
+  type: "transcript" | "done" | "error";
+  transcript: string;
+  interimTranscript?: string;
+  finalTranscript?: string;
+  isFinal?: boolean;
+  model: string | null;
+  message?: string;
+}
+
 export interface GeneratedReport {
   elderId: string;
   transcript: string;

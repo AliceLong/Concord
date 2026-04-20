@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Calendar, Check, Mic, RefreshCcw, Square, Sparkles } from "lucide-react";
 import type { ElderlyProfile } from "@/types/elderly";
-import type { AsrTranscription, GeneratedReport } from "@/types/report";
+import type { AsrStreamEvent, AsrStreamSession, GeneratedReport } from "@/types/report";
 import styles from "@/components/report-session.module.css";
 
 interface ReportSessionProps {
@@ -18,7 +18,7 @@ const preferredMimeTypes = [
   "audio/ogg"
 ] as const;
 
-const recordingChunkIntervalMs = 1200;
+const recordingChunkIntervalMs = 250;
 
 function getSupportedAudioMimeType(): string | null {
   if (typeof MediaRecorder === "undefined") {
@@ -44,13 +44,15 @@ function extensionFromMimeType(mimeType: string): string {
 export function ReportSession({ elder }: ReportSessionProps) {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
-  const chunkBufferRef = useRef<Blob[]>([]);
   const recorderMimeTypeRef = useRef("audio/webm");
-  const transcriptionInFlightRef = useRef(false);
-  const retranscribeRequestedRef = useRef(false);
-  const latestRequestRef = useRef(0);
-  const latestAppliedRef = useRef(0);
+  const streamSessionIdRef = useRef<string | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const uploadInFlightRef = useRef(false);
+  const uploadQueueRef = useRef<Blob[]>([]);
+  const stopAfterUploadsRef = useRef(false);
   const autoSyncDraftRef = useRef(true);
+  const sampleRateHertzRef = useRef<number | null>(null);
+  const audioChannelCountRef = useRef<number | null>(1);
 
   const [isSupported, setIsSupported] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
@@ -72,77 +74,162 @@ export function ReportSession({ elder }: ReportSessionProps) {
       mediaRecorderRef.current = null;
       mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
+      eventSourceRef.current?.close();
+      eventSourceRef.current = null;
     };
   }, []);
 
-  async function requestTranscription(blob: Blob) {
+  async function createStreamingSession() {
+    const response = await fetch("/api/asr/stream/start", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        mimeType: recorderMimeTypeRef.current,
+        sampleRateHertz: sampleRateHertzRef.current,
+        audioChannelCount: audioChannelCountRef.current
+      })
+    });
+    const body = (await response.json()) as AsrStreamSession & { error?: string };
+
+    if (!response.ok || !body.sessionId) {
+      throw new Error(body.error ?? "语音流初始化失败");
+    }
+
+    return body;
+  }
+
+  function openStreamingEvents(sessionId: string) {
+    eventSourceRef.current?.close();
+    const source = new EventSource(`/api/asr/stream/events?sessionId=${encodeURIComponent(sessionId)}`);
+
+    source.onmessage = (event) => {
+      const payload = JSON.parse(event.data) as AsrStreamEvent;
+
+      if (payload.type === "transcript") {
+        if (autoSyncDraftRef.current) {
+          setDraft(payload.transcript);
+        }
+        return;
+      }
+
+      if (payload.type === "done") {
+        if (autoSyncDraftRef.current) {
+          setDraft(payload.transcript);
+        }
+        setAsrPending(false);
+        setHasRecording(Boolean(payload.transcript.trim()));
+        source.close();
+        eventSourceRef.current = null;
+        return;
+      }
+
+      setError(payload.message ?? "语音转写失败");
+      setAsrPending(false);
+      source.close();
+      eventSourceRef.current = null;
+    };
+
+    source.onerror = () => {
+      source.close();
+      eventSourceRef.current = null;
+    };
+
+    eventSourceRef.current = source;
+  }
+
+  async function uploadStreamingChunk(blob: Blob) {
     const mimeType = blob.type || "application/octet-stream";
     const extension = extensionFromMimeType(mimeType);
     const formData = new FormData();
+    const sessionId = streamSessionIdRef.current;
+
+    if (!sessionId) {
+      throw new Error("语音流会话不存在。");
+    }
+
+    formData.set("sessionId", sessionId);
     formData.set(
       "audio",
       new File([blob], `session-${Date.now()}.${extension}`, {
         type: mimeType
       })
     );
-
-    const response = await fetch("/api/asr", {
+    const response = await fetch("/api/asr/stream/chunk", {
       method: "POST",
       body: formData
     });
-    const body = (await response.json()) as AsrTranscription & { error?: string };
 
-    if (!response.ok || !body.transcript) {
+    if (!response.ok) {
+      const body = (await response.json()) as { error?: string };
       throw new Error(body.error ?? "语音转写失败");
     }
-
-    return body.transcript;
   }
 
-  function queueLiveTranscription() {
-    if (chunkBufferRef.current.length === 0) {
+  function processUploadQueue() {
+    if (uploadInFlightRef.current) {
       return;
     }
 
-    if (transcriptionInFlightRef.current) {
-      retranscribeRequestedRef.current = true;
+    const nextChunk = uploadQueueRef.current.shift();
+
+    if (!nextChunk) {
+      if (stopAfterUploadsRef.current) {
+        void stopStreamingSession();
+      }
       return;
     }
 
-    transcriptionInFlightRef.current = true;
-    setAsrPending(true);
-    const snapshot = new Blob(chunkBufferRef.current, {
-      type: recorderMimeTypeRef.current
-    });
-    const requestId = latestRequestRef.current + 1;
-    latestRequestRef.current = requestId;
+    uploadInFlightRef.current = true;
 
-    void requestTranscription(snapshot)
-      .then((transcript) => {
-        if (requestId < latestAppliedRef.current) {
-          return;
-        }
-
-        latestAppliedRef.current = requestId;
-
-        if (autoSyncDraftRef.current) {
-          setDraft(transcript);
-        }
-      })
+    void uploadStreamingChunk(nextChunk)
       .catch((currentError) => {
         setError(currentError instanceof Error ? currentError.message : "语音转写失败");
       })
       .finally(() => {
-        transcriptionInFlightRef.current = false;
+        uploadInFlightRef.current = false;
 
-        if (retranscribeRequestedRef.current) {
-          retranscribeRequestedRef.current = false;
-          queueLiveTranscription();
+        if (uploadQueueRef.current.length > 0) {
+          processUploadQueue();
           return;
         }
 
-        setAsrPending(false);
+        if (stopAfterUploadsRef.current) {
+          void stopStreamingSession();
+        }
       });
+  }
+
+  function queueChunkUpload(chunk: Blob) {
+    uploadQueueRef.current.push(chunk);
+    processUploadQueue();
+  }
+
+  async function stopStreamingSession() {
+    const sessionId = streamSessionIdRef.current;
+
+    if (!sessionId) {
+      setAsrPending(false);
+      return;
+    }
+
+    stopAfterUploadsRef.current = false;
+
+    const response = await fetch("/api/asr/stream/stop", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ sessionId })
+    });
+
+    streamSessionIdRef.current = null;
+
+    if (!response.ok) {
+      const body = (await response.json()) as { error?: string };
+      throw new Error(body.error ?? "关闭语音流失败");
+    }
   }
 
   async function handleStartRecording() {
@@ -155,37 +242,54 @@ export function ReportSession({ elder }: ReportSessionProps) {
       return;
     }
 
+    let stream: MediaStream | null = null;
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const primaryTrack = stream.getAudioTracks()[0];
+      const trackSettings = primaryTrack?.getSettings();
       const supportedMimeType = getSupportedAudioMimeType();
       const mimeType = supportedMimeType ?? "audio/webm";
       const recorder = supportedMimeType
         ? new MediaRecorder(stream, { mimeType })
         : new MediaRecorder(stream);
 
-      chunkBufferRef.current = [];
       recorderMimeTypeRef.current = recorder.mimeType || mimeType;
-      transcriptionInFlightRef.current = false;
-      retranscribeRequestedRef.current = false;
-      latestRequestRef.current = 0;
-      latestAppliedRef.current = 0;
+      uploadInFlightRef.current = false;
+      uploadQueueRef.current = [];
+      stopAfterUploadsRef.current = false;
       autoSyncDraftRef.current = true;
+      sampleRateHertzRef.current = trackSettings?.sampleRate ?? 48000;
+      audioChannelCountRef.current = trackSettings?.channelCount ?? 1;
+      setAsrPending(true);
+
+      const streamingSession = await createStreamingSession();
+      streamSessionIdRef.current = streamingSession.sessionId;
+      openStreamingEvents(streamingSession.sessionId);
 
       recorder.ondataavailable = (event) => {
         if (event.data.size === 0) {
           return;
         }
 
-        chunkBufferRef.current.push(event.data);
-        queueLiveTranscription();
+        queueChunkUpload(event.data);
       };
 
       recorder.onstop = () => {
-        setHasRecording(chunkBufferRef.current.length > 0);
         setIsRecording(false);
         mediaRecorderRef.current = null;
         mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
         mediaStreamRef.current = null;
+
+        if (uploadInFlightRef.current || uploadQueueRef.current.length > 0) {
+          stopAfterUploadsRef.current = true;
+          return;
+        }
+
+        void stopStreamingSession().catch((currentError) => {
+          setError(currentError instanceof Error ? currentError.message : "关闭语音流失败");
+          setAsrPending(false);
+        });
       };
 
       recorder.start(recordingChunkIntervalMs);
@@ -195,7 +299,9 @@ export function ReportSession({ elder }: ReportSessionProps) {
       setHasRecording(false);
       setDraft("");
     } catch (currentError) {
+      stream?.getTracks().forEach((track) => track.stop());
       setIsRecording(false);
+      setAsrPending(false);
       setError(currentError instanceof Error ? currentError.message : "录音启动失败");
     }
   }
@@ -244,12 +350,26 @@ export function ReportSession({ elder }: ReportSessionProps) {
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
     mediaRecorderRef.current = null;
     mediaStreamRef.current = null;
-    chunkBufferRef.current = [];
-    transcriptionInFlightRef.current = false;
-    retranscribeRequestedRef.current = false;
-    latestRequestRef.current = 0;
-    latestAppliedRef.current = 0;
+    eventSourceRef.current?.close();
+    eventSourceRef.current = null;
+    uploadInFlightRef.current = false;
+    uploadQueueRef.current = [];
+    stopAfterUploadsRef.current = false;
     autoSyncDraftRef.current = true;
+    sampleRateHertzRef.current = null;
+    audioChannelCountRef.current = 1;
+
+    if (streamSessionIdRef.current) {
+      void fetch("/api/asr/stream/stop", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ sessionId: streamSessionIdRef.current })
+      });
+      streamSessionIdRef.current = null;
+    }
+
     setIsRecording(false);
     setHasRecording(false);
     setAsrPending(false);
