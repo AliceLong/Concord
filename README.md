@@ -10,7 +10,7 @@
 1. 在首页点击某位长者
 2. 进入该长者的 `Report` 页面
 3. 开始录音
-4. 调用 `/api/asr` 把音频转成文字
+4. 浏览器通过 WebSocket 推送 `16k mono PCM` 到 Google StreamingRecognize
 5. 护工在文本框中修改确认内容
 6. 调用 `/api/report` 生成：
    - `report_structured`
@@ -37,6 +37,8 @@ src/
 │   ├── report-session.module.css
 │   └── report-session.tsx
 ├── lib/
+│   ├── audio/
+│   │   └── pcm.ts
 │   ├── asr-client.ts
 │   ├── demo-data.ts
 │   ├── google-client.ts
@@ -52,6 +54,12 @@ src/
     ├── elderly.ts
     └── report.ts
 ```
+
+根目录还包含：
+
+- `server.mjs`
+- `server/asr-websocket.mjs`
+- `public/audio-worklet-recorder.js`
 
 ## 启动
 
@@ -73,7 +81,8 @@ http://localhost:3000
 - 这版不接数据库
 - 这版不保留 AI Chat / Dashboard / 时间线 / 多余 API
 - 前端只负责录音，ASR 与结构化总结都走后端接口
-- `/api/asr` 负责音频转写
+- 实时 ASR 主链路是 `PCM + WebSocket + Google StreamingRecognize`
+- `/api/asr` 保留为非实时 fallback 转写接口
 - `/api/report` 负责结构化纪要生成
 - `/api/health/google` 用于快速检查 Google Cloud 配置与 ADC
 - ASR 使用 Google Cloud Speech-to-Text V2

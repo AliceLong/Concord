@@ -2,57 +2,51 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Calendar, Check, Mic, RefreshCcw, Square, Sparkles } from "lucide-react";
+import { concatInt16Arrays, downsampleToInt16Pcm, int16ArrayToUint8Array, PCM_FRAME_SAMPLES } from "@/lib/audio/pcm";
 import type { ElderlyProfile } from "@/types/elderly";
-import type { AsrStreamEvent, AsrStreamSession, GeneratedReport } from "@/types/report";
+import type { AsrStreamEvent, GeneratedReport } from "@/types/report";
 import styles from "@/components/report-session.module.css";
 
 interface ReportSessionProps {
   elder: ElderlyProfile;
 }
 
-const preferredMimeTypes = [
-  "audio/webm;codecs=opus",
-  "audio/webm",
-  "audio/mp4",
-  "audio/ogg;codecs=opus",
-  "audio/ogg"
-] as const;
+type AsrSocketMessage =
+  | { type: "ready"; model?: string | null }
+  | AsrStreamEvent;
 
-const recordingChunkIntervalMs = 250;
-
-function getSupportedAudioMimeType(): string | null {
-  if (typeof MediaRecorder === "undefined") {
-    return null;
-  }
-
-  for (const mimeType of preferredMimeTypes) {
-    if (typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(mimeType)) {
-      return mimeType;
-    }
-  }
-
-  return null;
+function getAsrWebSocketUrl(): string {
+  const url = new URL(window.location.href);
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  url.pathname = "/ws/asr";
+  url.search = "";
+  url.hash = "";
+  return url.toString();
 }
 
-function extensionFromMimeType(mimeType: string): string {
-  if (mimeType.includes("webm")) return "webm";
-  if (mimeType.includes("ogg")) return "ogg";
-  if (mimeType.includes("mp4")) return "m4a";
-  return "bin";
+async function readJsonResponse<T>(response: Response): Promise<T> {
+  const text = await response.text();
+
+  if (!text) {
+    throw new Error("服务端返回了空响应。");
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(`服务端返回了非 JSON 响应：${text.slice(0, 200)}`);
+  }
 }
 
 export function ReportSession({ elder }: ReportSessionProps) {
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
-  const recorderMimeTypeRef = useRef("audio/webm");
-  const streamSessionIdRef = useRef<string | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
-  const uploadInFlightRef = useRef(false);
-  const uploadQueueRef = useRef<Blob[]>([]);
-  const stopAfterUploadsRef = useRef(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
+  const sinkNodeRef = useRef<GainNode | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
+  const pcmBufferRef = useRef<Int16Array<ArrayBufferLike>>(new Int16Array(0));
   const autoSyncDraftRef = useRef(true);
-  const sampleRateHertzRef = useRef<number | null>(null);
-  const audioChannelCountRef = useRef<number | null>(1);
 
   const [isSupported, setIsSupported] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
@@ -62,252 +56,281 @@ export function ReportSession({ elder }: ReportSessionProps) {
   const [asrPending, setAsrPending] = useState(false);
   const [reportPending, setReportPending] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<GeneratedReport | null>(null);
+  const [latencyLabel, setLatencyLabel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof MediaRecorder === "undefined") {
+    if (
+      typeof window === "undefined" ||
+      typeof navigator === "undefined" ||
+      typeof AudioContext === "undefined" ||
+      typeof WebSocket === "undefined"
+    ) {
       setIsSupported(false);
     }
 
     return () => {
-      mediaRecorderRef.current?.stop();
-      mediaRecorderRef.current = null;
-      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
-      eventSourceRef.current?.close();
-      eventSourceRef.current = null;
+      teardownAudioPipeline();
+      closeAsrSocket();
     };
   }, []);
 
-  async function createStreamingSession() {
-    const response = await fetch("/api/asr/stream/start", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        mimeType: recorderMimeTypeRef.current,
-        sampleRateHertz: sampleRateHertzRef.current,
-        audioChannelCount: audioChannelCountRef.current
-      })
-    });
-    const body = (await response.json()) as AsrStreamSession & { error?: string };
+  function teardownAudioPipeline() {
+    workletNodeRef.current?.port.close();
+    workletNodeRef.current?.disconnect();
+    sinkNodeRef.current?.disconnect();
+    sourceNodeRef.current?.disconnect();
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
 
-    if (!response.ok || !body.sessionId) {
-      throw new Error(body.error ?? "语音流初始化失败");
+    workletNodeRef.current = null;
+    sinkNodeRef.current = null;
+    sourceNodeRef.current = null;
+    mediaStreamRef.current = null;
+
+    if (audioContextRef.current) {
+      void audioContextRef.current.close();
+      audioContextRef.current = null;
     }
-
-    return body;
   }
 
-  function openStreamingEvents(sessionId: string) {
-    eventSourceRef.current?.close();
-    const source = new EventSource(`/api/asr/stream/events?sessionId=${encodeURIComponent(sessionId)}`);
+  function closeAsrSocket() {
+    if (!socketRef.current) {
+      return;
+    }
 
-    source.onmessage = (event) => {
-      const payload = JSON.parse(event.data) as AsrStreamEvent;
+    if (socketRef.current.readyState === WebSocket.OPEN || socketRef.current.readyState === WebSocket.CONNECTING) {
+      socketRef.current.close();
+    }
 
-      if (payload.type === "transcript") {
-        if (autoSyncDraftRef.current) {
-          setDraft(payload.transcript);
-        }
-        return;
-      }
+    socketRef.current = null;
+  }
 
-      if (payload.type === "done") {
-        if (autoSyncDraftRef.current) {
-          setDraft(payload.transcript);
-        }
-        setAsrPending(false);
-        setHasRecording(Boolean(payload.transcript.trim()));
-        source.close();
-        eventSourceRef.current = null;
-        return;
-      }
+  function syncDraft(transcript: string) {
+    if (!autoSyncDraftRef.current) {
+      return;
+    }
 
-      setError(payload.message ?? "语音转写失败");
+    setDraft(transcript);
+  }
+
+  function handleSocketMessage(event: MessageEvent<string>) {
+    let payload: AsrSocketMessage;
+
+    try {
+      payload = JSON.parse(event.data) as AsrSocketMessage;
+    } catch {
+      setError(`ASR 返回了非 JSON 消息：${event.data.slice(0, 120)}`);
       setAsrPending(false);
-      source.close();
-      eventSourceRef.current = null;
-    };
-
-    source.onerror = () => {
-      source.close();
-      eventSourceRef.current = null;
-    };
-
-    eventSourceRef.current = source;
-  }
-
-  async function uploadStreamingChunk(blob: Blob) {
-    const mimeType = blob.type || "application/octet-stream";
-    const extension = extensionFromMimeType(mimeType);
-    const formData = new FormData();
-    const sessionId = streamSessionIdRef.current;
-
-    if (!sessionId) {
-      throw new Error("语音流会话不存在。");
-    }
-
-    formData.set("sessionId", sessionId);
-    formData.set(
-      "audio",
-      new File([blob], `session-${Date.now()}.${extension}`, {
-        type: mimeType
-      })
-    );
-    const response = await fetch("/api/asr/stream/chunk", {
-      method: "POST",
-      body: formData
-    });
-
-    if (!response.ok) {
-      const body = (await response.json()) as { error?: string };
-      throw new Error(body.error ?? "语音转写失败");
-    }
-  }
-
-  function processUploadQueue() {
-    if (uploadInFlightRef.current) {
       return;
     }
 
-    const nextChunk = uploadQueueRef.current.shift();
+    if (payload.type === "ready") {
+      return;
+    }
 
-    if (!nextChunk) {
-      if (stopAfterUploadsRef.current) {
-        void stopStreamingSession();
+    if (payload.type === "transcript") {
+      const transcript = payload.transcript ?? "";
+      syncDraft(transcript);
+      setHasRecording(Boolean(transcript.trim()));
+
+      if (payload.metrics?.endToEndMs != null) {
+        const parts = [`端到端 ${payload.metrics.endToEndMs}ms`];
+
+        if (payload.metrics.serverToGoogleResultMs != null) {
+          parts.push(`Google ${payload.metrics.serverToGoogleResultMs}ms`);
+        }
+
+        if (payload.metrics.clientToServerMs != null) {
+          parts.push(`上传 ${payload.metrics.clientToServerMs}ms`);
+        }
+
+        setLatencyLabel(parts.join(" · "));
       }
+
       return;
     }
 
-    uploadInFlightRef.current = true;
+    if (payload.type === "done") {
+      const transcript = payload.transcript ?? "";
+      syncDraft(transcript);
+      setHasRecording(Boolean(transcript.trim()));
+      setAsrPending(false);
+      setLatencyLabel(null);
+      closeAsrSocket();
+      return;
+    }
 
-    void uploadStreamingChunk(nextChunk)
-      .catch((currentError) => {
-        setError(currentError instanceof Error ? currentError.message : "语音转写失败");
-      })
-      .finally(() => {
-        uploadInFlightRef.current = false;
+    setError(payload.message ?? "语音转写失败");
+    setAsrPending(false);
+    setLatencyLabel(null);
+    closeAsrSocket();
+  }
 
-        if (uploadQueueRef.current.length > 0) {
-          processUploadQueue();
+  async function openAsrSocket(): Promise<WebSocket> {
+    return await new Promise<WebSocket>((resolve, reject) => {
+      const socket = new WebSocket(getAsrWebSocketUrl());
+      let settled = false;
+
+      socket.onopen = () => {
+        socketRef.current = socket;
+        socket.send(
+          JSON.stringify({
+            type: "start",
+            languageCode: "yue-Hant-HK"
+          })
+        );
+        socket.onmessage = handleSocketMessage;
+        settled = true;
+        resolve(socket);
+      };
+
+      socket.onerror = () => {
+        if (!settled) {
+          reject(new Error("实时语音连接失败。"));
+        } else {
+          setError("实时语音连接失败。");
+          setAsrPending(false);
+        }
+      };
+
+      socket.onclose = () => {
+        if (!settled) {
+          reject(new Error("实时语音连接已关闭。"));
           return;
         }
 
-        if (stopAfterUploadsRef.current) {
-          void stopStreamingSession();
-        }
-      });
+        socketRef.current = null;
+      };
+    });
   }
 
-  function queueChunkUpload(chunk: Blob) {
-    uploadQueueRef.current.push(chunk);
-    processUploadQueue();
-  }
+  function flushPcmFrames(sendPartial: boolean) {
+    const socket = socketRef.current;
 
-  async function stopStreamingSession() {
-    const sessionId = streamSessionIdRef.current;
-
-    if (!sessionId) {
-      setAsrPending(false);
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
       return;
     }
 
-    stopAfterUploadsRef.current = false;
-
-    const response = await fetch("/api/asr/stream/stop", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ sessionId })
-    });
-
-    streamSessionIdRef.current = null;
-
-    if (!response.ok) {
-      const body = (await response.json()) as { error?: string };
-      throw new Error(body.error ?? "关闭语音流失败");
+    while (pcmBufferRef.current.length >= PCM_FRAME_SAMPLES) {
+      const frame = pcmBufferRef.current.slice(0, PCM_FRAME_SAMPLES);
+      pcmBufferRef.current = pcmBufferRef.current.slice(PCM_FRAME_SAMPLES);
+      const frameBytes = int16ArrayToUint8Array(frame);
+      const metadataBytes = new TextEncoder().encode(`TSMETA::${Date.now()}\n`);
+      const payload = new Uint8Array(metadataBytes.length + frameBytes.length);
+      payload.set(metadataBytes, 0);
+      payload.set(frameBytes, metadataBytes.length);
+      socket.send(payload);
     }
+
+    if (sendPartial && pcmBufferRef.current.length > 0) {
+      const frameBytes = int16ArrayToUint8Array(pcmBufferRef.current);
+      const metadataBytes = new TextEncoder().encode(`TSMETA::${Date.now()}\n`);
+      const payload = new Uint8Array(metadataBytes.length + frameBytes.length);
+      payload.set(metadataBytes, 0);
+      payload.set(frameBytes, metadataBytes.length);
+      socket.send(payload);
+      pcmBufferRef.current = new Int16Array(0);
+    }
+  }
+
+  function handleAudioChunk(input: Float32Array, inputSampleRate: number) {
+    const pcmChunk = downsampleToInt16Pcm(input, inputSampleRate);
+    pcmBufferRef.current = concatInt16Arrays(pcmBufferRef.current, pcmChunk);
+    flushPcmFrames(false);
   }
 
   async function handleStartRecording() {
     setError(null);
     setGeneratedReport(null);
 
-    if (typeof MediaRecorder === "undefined") {
+    if (
+      !isSupported ||
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices?.getUserMedia ||
+      typeof AudioWorkletNode === "undefined"
+    ) {
       setIsSupported(false);
-      setError("当前浏览器不支持录音，请改用 Chrome 或 Edge。");
+      setError("当前浏览器不支持低延迟录音，请改用最新版 Chrome。");
       return;
     }
 
     let stream: MediaStream | null = null;
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const primaryTrack = stream.getAudioTracks()[0];
-      const trackSettings = primaryTrack?.getSettings();
-      const supportedMimeType = getSupportedAudioMimeType();
-      const mimeType = supportedMimeType ?? "audio/webm";
-      const recorder = supportedMimeType
-        ? new MediaRecorder(stream, { mimeType })
-        : new MediaRecorder(stream);
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      });
 
-      recorderMimeTypeRef.current = recorder.mimeType || mimeType;
-      uploadInFlightRef.current = false;
-      uploadQueueRef.current = [];
-      stopAfterUploadsRef.current = false;
+      await openAsrSocket();
+
+      const audioContext = new AudioContext();
+      await audioContext.audioWorklet.addModule("/audio-worklet-recorder.js");
+      await audioContext.resume();
+
+      const sourceNode = audioContext.createMediaStreamSource(stream);
+      const workletNode = new AudioWorkletNode(audioContext, "recorder-processor", {
+        numberOfInputs: 1,
+        numberOfOutputs: 1,
+        channelCount: 1,
+        channelCountMode: "explicit"
+      });
+      const sinkNode = audioContext.createGain();
+      sinkNode.gain.value = 0;
+
+      pcmBufferRef.current = new Int16Array(0);
       autoSyncDraftRef.current = true;
-      sampleRateHertzRef.current = trackSettings?.sampleRate ?? 48000;
-      audioChannelCountRef.current = trackSettings?.channelCount ?? 1;
-      setAsrPending(true);
+      setLatencyLabel(null);
 
-      const streamingSession = await createStreamingSession();
-      streamSessionIdRef.current = streamingSession.sessionId;
-      openStreamingEvents(streamingSession.sessionId);
-
-      recorder.ondataavailable = (event) => {
-        if (event.data.size === 0) {
+      workletNode.port.onmessage = (event: MessageEvent<Float32Array>) => {
+        if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
           return;
         }
 
-        queueChunkUpload(event.data);
+        const chunk = event.data instanceof Float32Array ? event.data : new Float32Array(event.data);
+        handleAudioChunk(chunk, audioContext.sampleRate);
       };
 
-      recorder.onstop = () => {
-        setIsRecording(false);
-        mediaRecorderRef.current = null;
-        mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-        mediaStreamRef.current = null;
+      sourceNode.connect(workletNode);
+      workletNode.connect(sinkNode);
+      sinkNode.connect(audioContext.destination);
 
-        if (uploadInFlightRef.current || uploadQueueRef.current.length > 0) {
-          stopAfterUploadsRef.current = true;
-          return;
-        }
-
-        void stopStreamingSession().catch((currentError) => {
-          setError(currentError instanceof Error ? currentError.message : "关闭语音流失败");
-          setAsrPending(false);
-        });
-      };
-
-      recorder.start(recordingChunkIntervalMs);
-      mediaRecorderRef.current = recorder;
       mediaStreamRef.current = stream;
-      setIsRecording(true);
-      setHasRecording(false);
+      audioContextRef.current = audioContext;
+      sourceNodeRef.current = sourceNode;
+      workletNodeRef.current = workletNode;
+      sinkNodeRef.current = sinkNode;
+
       setDraft("");
+      setHasRecording(false);
+      setAsrPending(true);
+      setIsRecording(true);
     } catch (currentError) {
       stream?.getTracks().forEach((track) => track.stop());
-      setIsRecording(false);
+      teardownAudioPipeline();
+      closeAsrSocket();
       setAsrPending(false);
+      setIsRecording(false);
       setError(currentError instanceof Error ? currentError.message : "录音启动失败");
     }
   }
 
   function handleStopRecording() {
-    mediaRecorderRef.current?.stop();
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      teardownAudioPipeline();
+      setIsRecording(false);
+      setAsrPending(false);
+      return;
+    }
+
+    flushPcmFrames(true);
+    socketRef.current.send(JSON.stringify({ type: "stop" }));
+    teardownAudioPipeline();
+    setIsRecording(false);
   }
 
   async function handleGenerateReport() {
@@ -331,7 +354,7 @@ export function ReportSession({ elder }: ReportSessionProps) {
           sessionDate
         })
       });
-      const body = (await response.json()) as { report?: GeneratedReport; error?: string };
+      const body = await readJsonResponse<{ report?: GeneratedReport; error?: string }>(response);
 
       if (!response.ok || !body.report) {
         throw new Error(body.error ?? "生成报告失败");
@@ -346,39 +369,26 @@ export function ReportSession({ elder }: ReportSessionProps) {
   }
 
   function handleReset() {
-    mediaRecorderRef.current?.stop();
-    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-    mediaRecorderRef.current = null;
-    mediaStreamRef.current = null;
-    eventSourceRef.current?.close();
-    eventSourceRef.current = null;
-    uploadInFlightRef.current = false;
-    uploadQueueRef.current = [];
-    stopAfterUploadsRef.current = false;
-    autoSyncDraftRef.current = true;
-    sampleRateHertzRef.current = null;
-    audioChannelCountRef.current = 1;
+    teardownAudioPipeline();
 
-    if (streamSessionIdRef.current) {
-      void fetch("/api/asr/stream/stop", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ sessionId: streamSessionIdRef.current })
-      });
-      streamSessionIdRef.current = null;
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({ type: "stop" }));
     }
+
+    closeAsrSocket();
+    pcmBufferRef.current = new Int16Array(0);
+    autoSyncDraftRef.current = true;
 
     setIsRecording(false);
     setHasRecording(false);
     setAsrPending(false);
     setDraft("");
     setGeneratedReport(null);
+    setLatencyLabel(null);
     setError(null);
   }
 
-  const statusLabel = isRecording ? "录音中" : asrPending ? "转写中" : hasRecording ? "准备生成" : "准备录音";
+  const statusLabel = isRecording ? "录音中" : asrPending ? "整理中" : hasRecording ? "准备生成" : "准备录音";
 
   return (
     <section className={styles.wrapper}>
@@ -436,6 +446,7 @@ export function ReportSession({ elder }: ReportSessionProps) {
         />
 
         {error ? <div className={styles.error}>{error}</div> : null}
+        {latencyLabel ? <div className={styles.latency}>{latencyLabel}</div> : null}
 
         <button
           className={styles.doneButton}

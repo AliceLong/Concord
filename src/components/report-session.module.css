@@ -152,6 +152,13 @@
   font-size: 13px;
 }
 
+.latency {
+  margin-top: 10px;
+  color: #53709b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .reportSection {
   display: grid;
   grid-template-columns: 0.92fr 1.08fr;

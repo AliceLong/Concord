@@ -38,6 +38,14 @@ export interface AsrStreamEvent {
   isFinal?: boolean;
   model: string | null;
   message?: string;
+  metrics?: {
+    clientSentAt?: number;
+    serverReceivedAt?: number;
+    googleRespondedAt?: number;
+    clientToServerMs?: number;
+    serverToGoogleResultMs?: number;
+    endToEndMs?: number;
+  };
 }
 
 export interface GeneratedReport {
