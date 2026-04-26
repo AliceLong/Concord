@@ -35,6 +35,13 @@
   line-height: 1.5;
 }
 
+.moduleTip {
+  margin: 8px 0 0;
+  color: #416897;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -217,6 +224,31 @@
   font-size: 13px;
   line-height: 1.7;
   color: #223650;
+}
+
+.moduleList {
+  display: grid;
+  gap: 14px;
+}
+
+.moduleBlock {
+  display: grid;
+  gap: 6px;
+}
+
+.moduleName {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.moduleContent {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #223650;
+  white-space: pre-wrap;
 }
 
 .spin {

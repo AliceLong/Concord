@@ -26,7 +26,7 @@ export default function HomePage() {
 
         <section className={styles.list}>
           {elders.map((elder) => (
-            <Link key={elder.id} href={`/report/${elder.id}`} className={styles.card}>
+            <Link key={elder.id} href={`/report/${elder.id}/modules`} className={styles.card}>
               <div className={styles.cardMain}>
                 <div className={styles.cardHeader}>
                   <h2 className={styles.cardName}>{elder.fullName}</h2>

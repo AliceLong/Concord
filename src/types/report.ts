@@ -1,18 +1,44 @@
 import { z } from "zod";
 
-export const reportStructuredSchema = z.object({
-  mood: z.enum(["stable", "anxious", "depressed", "unknown"]),
-  appetite: z.enum(["good", "normal", "poor", "unknown"]),
-  sleep: z.enum(["good", "normal", "poor", "unknown"]),
-  mobility: z.enum(["independent", "assisted", "bedridden", "unknown"]),
-  symptoms: z.array(z.string()),
-  riskFlags: z.array(z.string()),
-  interventions: z.array(z.string()),
-  handover: z.string(),
-  summary: z.string()
+export const moduleReportItemSchema = z.object({
+  moduleId: z.string().min(1),
+  moduleTitle: z.string().min(1),
+  serviceContent: z.string().nullable(),
+  elderResponse: z.string().nullable(),
+  completion: z.string().nullable(),
+  remarks: z.string().nullable()
 });
 
-export type StructuredReport = z.infer<typeof reportStructuredSchema>;
+export const elderStatusSectionSchema = z.object({
+  statusTags: z.array(z.string()),
+  interactionPerformance: z.string().nullable(),
+  physicalCondition: z.string().nullable()
+});
+
+export const completedServicesSectionSchema = z.object({
+  serviceItems: z.array(z.string()),
+  completion: z.string().nullable(),
+  elderPerformance: z.string().nullable()
+});
+
+export const summaryRemarksSectionSchema = z.object({
+  summary: z.string().nullable(),
+  incident: z.string().nullable(),
+  recommendation: z.string().nullable()
+});
+
+export const moduleStructuredReportSchema = z.object({
+  elderStatus: elderStatusSectionSchema,
+  completedServices: completedServicesSectionSchema,
+  moduleReports: z.array(moduleReportItemSchema),
+  summaryAndRemarks: summaryRemarksSectionSchema
+});
+
+export type ModuleReportItem = z.infer<typeof moduleReportItemSchema>;
+export type ModuleStructuredReport = z.infer<typeof moduleStructuredReportSchema>;
+export type ElderStatusSection = z.infer<typeof elderStatusSectionSchema>;
+export type CompletedServicesSection = z.infer<typeof completedServicesSectionSchema>;
+export type SummaryRemarksSection = z.infer<typeof summaryRemarksSectionSchema>;
 
 export interface AsrTranscription {
   transcript: string;
@@ -52,7 +78,11 @@ export interface GeneratedReport {
   elderId: string;
   transcript: string;
   sessionDate: string | null;
-  reportStructured: StructuredReport;
+  selectedModules: string[];
+  elderStatus: ElderStatusSection;
+  completedServices: CompletedServicesSection;
+  moduleReports: ModuleReportItem[];
+  summaryAndRemarks: SummaryRemarksSection;
   reportText: string;
   generatedAt: string;
   model: string | null;

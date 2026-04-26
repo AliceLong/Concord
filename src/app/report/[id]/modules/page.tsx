@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { ReportSession } from "@/components/report-session";
-import { buildCareModuleTip, parseCareModuleIds, serializeCareModuleIds } from "@/lib/care-modules";
+import { CareModulePicker } from "@/components/care-module-picker";
+import { parseCareModuleIds } from "@/lib/care-modules";
 import { getElderById } from "@/server/repositories/elder";
 import styles from "@/app/report/report-page.module.css";
 
-export default async function ReportPage({
+export default async function CareModulesPage({
   params,
   searchParams
 }: {
@@ -23,15 +23,11 @@ export default async function ReportPage({
 
   const selectedModules = parseCareModuleIds(modules);
 
-  if (selectedModules.length === 0) {
-    redirect(`/report/${id}/modules`);
-  }
-
   return (
     <main className={styles.page}>
       <section className={styles.shell}>
         <div className={styles.header}>
-          <Link href={`/report/${id}/modules?modules=${serializeCareModuleIds(selectedModules)}`} className={styles.backButton}>
+          <Link href="/" className={styles.backButton}>
             <ChevronLeft size={18} />
           </Link>
           <div className={styles.headerMain}>
@@ -46,7 +42,7 @@ export default async function ReportPage({
           {elder.medicalNotes ? <span className={styles.metaText}>{elder.medicalNotes}</span> : null}
         </div>
 
-        <ReportSession elder={elder} selectedModules={selectedModules} selectedModuleTip={buildCareModuleTip(selectedModules)} />
+        <CareModulePicker elderId={elder.id} initialSelected={selectedModules} />
       </section>
     </main>
   );

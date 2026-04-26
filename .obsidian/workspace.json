@@ -200,6 +200,12 @@
   },
   "active": "d3cbf7157ba0720d",
   "lastOpenFiles": [
+    "src/app/report/[id]/modules/page.tsx",
+    "src/app/report/[id]/modules",
+    "src/components/care-module-picker.module.css",
+    "src/components/care-module-picker.tsx",
+    "src/lib/report-format.ts",
+    "src/lib/care-modules.ts",
     "Architechture.md",
     "README.md"
   ]

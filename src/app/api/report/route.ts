@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { isCareModuleId } from "@/lib/care-modules";
 import { createGeneratedReport, ElderNotFoundError } from "@/server/services/report";
 
 const requestSchema = z.object({
   elderId: z.string().min(1),
-  transcript: z.string().min(1),
-  sessionDate: z.string().optional()
+  transcript: z.string().trim().min(1),
+  sessionDate: z.string().optional(),
+  selectedModules: z
+    .array(z.string())
+    .min(1, "请至少选择一个照护模块。")
+    .refine((values) => values.every((value) => isCareModuleId(value)), "照护模块无效。")
 });
 
 export async function POST(request: Request) {

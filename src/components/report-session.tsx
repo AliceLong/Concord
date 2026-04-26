@@ -4,12 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { RealtimeClient, type RealtimeServerMessage } from "@speechmatics/real-time-client";
 import { Calendar, Check, Mic, RefreshCcw, Square, Sparkles } from "lucide-react";
 import { concatInt16Arrays, downsampleToInt16Pcm, int16ArrayToUint8Array, PCM_FRAME_SAMPLES } from "@/lib/audio/pcm";
+import type { CareModuleId } from "@/lib/care-modules";
 import type { ElderlyProfile } from "@/types/elderly";
 import type { GeneratedReport } from "@/types/report";
 import styles from "@/components/report-session.module.css";
 
 interface ReportSessionProps {
   elder: ElderlyProfile;
+  selectedModules: CareModuleId[];
+  selectedModuleTip: string;
 }
 
 interface SpeechmaticsTokenResponse {
@@ -39,7 +42,7 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
   }
 }
 
-export function ReportSession({ elder }: ReportSessionProps) {
+export function ReportSession({ elder, selectedModules, selectedModuleTip }: ReportSessionProps) {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
@@ -362,7 +365,8 @@ export function ReportSession({ elder }: ReportSessionProps) {
         body: JSON.stringify({
           elderId: elder.id,
           transcript: draft,
-          sessionDate
+          sessionDate,
+          selectedModules
         })
       });
       const body = await readJsonResponse<{ report?: GeneratedReport; error?: string }>(response);
@@ -412,6 +416,7 @@ export function ReportSession({ elder }: ReportSessionProps) {
           <div>
             <p className={styles.sectionTitle}>护理记录</p>
             <p className={styles.sectionMeta}>{elder.tips}</p>
+            <p className={styles.moduleTip}>{selectedModuleTip}</p>
           </div>
         </div>
 
@@ -477,13 +482,48 @@ export function ReportSession({ elder }: ReportSessionProps) {
         <section className={styles.reportSection}>
           <div className={styles.reportPreview}>
             <div className={styles.reportHeader}>
-              <p className={styles.reportTitle}>结构化结果</p>
+              <p className={styles.reportTitle}>模块化结果</p>
               <span className={styles.statusDone}>
                 <Check size={14} />
                 已生成
               </span>
             </div>
-            <pre className={styles.pre}>{JSON.stringify(generatedReport.reportStructured, null, 2)}</pre>
+            <div className={styles.moduleList}>
+              <div className={styles.moduleBlock}>
+                <p className={styles.moduleName}>【长者状态】</p>
+                <p className={styles.moduleContent}>
+                  状态标签：{generatedReport.elderStatus.statusTags.length ? generatedReport.elderStatus.statusTags.join("、") : "未提及"}
+                </p>
+                <p className={styles.moduleContent}>互动表现：{generatedReport.elderStatus.interactionPerformance ?? "未提及"}</p>
+                <p className={styles.moduleContent}>身体情况：{generatedReport.elderStatus.physicalCondition ?? "未提及"}</p>
+              </div>
+              <div className={styles.moduleBlock}>
+                <p className={styles.moduleName}>【已完成服务】</p>
+                <p className={styles.moduleContent}>
+                  服务项目：
+                  {generatedReport.completedServices.serviceItems.length
+                    ? generatedReport.completedServices.serviceItems.join("、")
+                    : "未提及"}
+                </p>
+                <p className={styles.moduleContent}>完成情况：{generatedReport.completedServices.completion ?? "未提及"}</p>
+                <p className={styles.moduleContent}>长者表现：{generatedReport.completedServices.elderPerformance ?? "未提及"}</p>
+              </div>
+              {generatedReport.moduleReports.map((item) => (
+                <div key={item.moduleId} className={styles.moduleBlock}>
+                  <p className={styles.moduleName}>【{item.moduleTitle}】</p>
+                  <p className={styles.moduleContent}>服务内容：{item.serviceContent ?? "未提及"}</p>
+                  <p className={styles.moduleContent}>长者反应：{item.elderResponse ?? "未提及"}</p>
+                  <p className={styles.moduleContent}>完成情况：{item.completion ?? "未提及"}</p>
+                  <p className={styles.moduleContent}>备注：{item.remarks ?? "未提及"}</p>
+                </div>
+              ))}
+              <div className={styles.moduleBlock}>
+                <p className={styles.moduleName}>【总结 / 特别事故 / 建议】</p>
+                <p className={styles.moduleContent}>总结：{generatedReport.summaryAndRemarks.summary ?? "未提及"}</p>
+                <p className={styles.moduleContent}>特别事故：{generatedReport.summaryAndRemarks.incident ?? "未提及"}</p>
+                <p className={styles.moduleContent}>后续建议：{generatedReport.summaryAndRemarks.recommendation ?? "未提及"}</p>
+              </div>
+            </div>
           </div>
 
           <div className={styles.reportPreview}>
