@@ -1,27 +1,28 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { RealtimeClient, type RealtimeServerMessage } from "@speechmatics/real-time-client";
 import { Calendar, Check, Mic, RefreshCcw, Square, Sparkles } from "lucide-react";
 import { concatInt16Arrays, downsampleToInt16Pcm, int16ArrayToUint8Array, PCM_FRAME_SAMPLES } from "@/lib/audio/pcm";
 import type { ElderlyProfile } from "@/types/elderly";
-import type { AsrStreamEvent, GeneratedReport } from "@/types/report";
+import type { GeneratedReport } from "@/types/report";
 import styles from "@/components/report-session.module.css";
 
 interface ReportSessionProps {
   elder: ElderlyProfile;
 }
 
-type AsrSocketMessage =
-  | { type: "ready"; model?: string | null }
-  | AsrStreamEvent;
+interface SpeechmaticsTokenResponse {
+  token: string;
+  url: string;
+  language: string;
+  maxDelay: number;
+  ttlSeconds: number;
+  operatingPoint: "standard" | "enhanced" | null;
+}
 
-function getAsrWebSocketUrl(): string {
-  const url = new URL(window.location.href);
-  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
-  url.pathname = "/ws/asr";
-  url.search = "";
-  url.hash = "";
-  return url.toString();
+function buildTranscript(finalSegments: string[], partialTranscript: string) {
+  return [...finalSegments, partialTranscript].filter(Boolean).join("").trim();
 }
 
 async function readJsonResponse<T>(response: Response): Promise<T> {
@@ -44,9 +45,13 @@ export function ReportSession({ elder }: ReportSessionProps) {
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const sinkNodeRef = useRef<GainNode | null>(null);
-  const socketRef = useRef<WebSocket | null>(null);
+  const speechmaticsClientRef = useRef<RealtimeClient | null>(null);
   const pcmBufferRef = useRef<Int16Array<ArrayBufferLike>>(new Int16Array(0));
   const autoSyncDraftRef = useRef(true);
+  const recordingStartedAtRef = useRef<number | null>(null);
+  const firstTranscriptAtRef = useRef<number | null>(null);
+  const finalSegmentsRef = useRef<string[]>([]);
+  const partialTranscriptRef = useRef("");
 
   const [isSupported, setIsSupported] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
@@ -71,7 +76,7 @@ export function ReportSession({ elder }: ReportSessionProps) {
 
     return () => {
       teardownAudioPipeline();
-      closeAsrSocket();
+      closeSpeechmaticsClient();
     };
   }, []);
 
@@ -93,16 +98,12 @@ export function ReportSession({ elder }: ReportSessionProps) {
     }
   }
 
-  function closeAsrSocket() {
-    if (!socketRef.current) {
+  function closeSpeechmaticsClient() {
+    if (!speechmaticsClientRef.current) {
       return;
     }
 
-    if (socketRef.current.readyState === WebSocket.OPEN || socketRef.current.readyState === WebSocket.CONNECTING) {
-      socketRef.current.close();
-    }
-
-    socketRef.current = null;
+    speechmaticsClientRef.current = null;
   }
 
   function syncDraft(transcript: string) {
@@ -113,122 +114,124 @@ export function ReportSession({ elder }: ReportSessionProps) {
     setDraft(transcript);
   }
 
-  function handleSocketMessage(event: MessageEvent<string>) {
-    let payload: AsrSocketMessage;
+  function updateLatencyLabel(finalized = false) {
+    const startedAt = recordingStartedAtRef.current;
 
-    try {
-      payload = JSON.parse(event.data) as AsrSocketMessage;
-    } catch {
-      setError(`ASR 返回了非 JSON 消息：${event.data.slice(0, 120)}`);
-      setAsrPending(false);
+    if (!startedAt) {
       return;
     }
 
-    if (payload.type === "ready") {
-      return;
+    const now = Date.now();
+
+    if (firstTranscriptAtRef.current == null) {
+      firstTranscriptAtRef.current = now;
     }
 
-    if (payload.type === "transcript") {
-      const transcript = payload.transcript ?? "";
-      syncDraft(transcript);
-      setHasRecording(Boolean(transcript.trim()));
+    const firstLatencyMs = firstTranscriptAtRef.current - startedAt;
+    const parts = [`首条转写 ${firstLatencyMs}ms`];
 
-      if (payload.metrics?.endToEndMs != null) {
-        const parts = [`端到端 ${payload.metrics.endToEndMs}ms`];
-
-        if (payload.metrics.serverToGoogleResultMs != null) {
-          parts.push(`Google ${payload.metrics.serverToGoogleResultMs}ms`);
-        }
-
-        if (payload.metrics.clientToServerMs != null) {
-          parts.push(`上传 ${payload.metrics.clientToServerMs}ms`);
-        }
-
-        setLatencyLabel(parts.join(" · "));
-      }
-
-      return;
+    if (finalized) {
+      parts.push(`最终定稿 ${now - startedAt}ms`);
     }
 
-    if (payload.type === "done") {
-      const transcript = payload.transcript ?? "";
-      syncDraft(transcript);
-      setHasRecording(Boolean(transcript.trim()));
-      setAsrPending(false);
-      setLatencyLabel(null);
-      closeAsrSocket();
-      return;
-    }
-
-    setError(payload.message ?? "语音转写失败");
-    setAsrPending(false);
-    setLatencyLabel(null);
-    closeAsrSocket();
+    setLatencyLabel(parts.join(" · "));
   }
 
-  async function openAsrSocket(): Promise<WebSocket> {
-    return await new Promise<WebSocket>((resolve, reject) => {
-      const socket = new WebSocket(getAsrWebSocketUrl());
-      let settled = false;
+  function handleSpeechmaticsMessage(message: RealtimeServerMessage) {
+    if (message.message === "AddPartialTranscript") {
+      partialTranscriptRef.current = message.metadata.transcript.trim();
+      const transcript = buildTranscript(finalSegmentsRef.current, partialTranscriptRef.current);
+      syncDraft(transcript);
+      setHasRecording(Boolean(transcript.trim()));
+      updateLatencyLabel(false);
+      return;
+    }
 
-      socket.onopen = () => {
-        socketRef.current = socket;
-        socket.send(
-          JSON.stringify({
-            type: "start",
-            languageCode: "yue-Hant-HK"
-          })
-        );
-        socket.onmessage = handleSocketMessage;
-        settled = true;
-        resolve(socket);
-      };
+    if (message.message === "AddTranscript") {
+      const segmentTranscript = message.metadata.transcript.trim();
 
-      socket.onerror = () => {
-        if (!settled) {
-          reject(new Error("实时语音连接失败。"));
-        } else {
-          setError("实时语音连接失败。");
-          setAsrPending(false);
-        }
-      };
+      if (segmentTranscript) {
+        finalSegmentsRef.current = [...finalSegmentsRef.current, segmentTranscript];
+      }
 
-      socket.onclose = () => {
-        if (!settled) {
-          reject(new Error("实时语音连接已关闭。"));
-          return;
-        }
+      partialTranscriptRef.current = "";
+      const transcript = buildTranscript(finalSegmentsRef.current, partialTranscriptRef.current);
+      syncDraft(transcript);
+      setHasRecording(Boolean(transcript.trim()));
+      updateLatencyLabel(true);
+      return;
+    }
 
-        socketRef.current = null;
-      };
+    if (message.message === "EndOfTranscript") {
+      const transcript = buildTranscript(finalSegmentsRef.current, partialTranscriptRef.current);
+      syncDraft(transcript);
+      setHasRecording(Boolean(transcript.trim()));
+      setAsrPending(false);
+      closeSpeechmaticsClient();
+      return;
+    }
+
+    if (message.message === "Warning") {
+      return;
+    }
+
+    if (message.message === "Error") {
+      setError(message.reason || "语音转写失败");
+      setAsrPending(false);
+      closeSpeechmaticsClient();
+    }
+  }
+
+  async function openSpeechmaticsClient(): Promise<RealtimeClient> {
+    const response = await fetch("/api/speechmatics/token");
+    const payload = await readJsonResponse<SpeechmaticsTokenResponse & { error?: string }>(response);
+
+    if (!response.ok || !payload.token) {
+      throw new Error(payload.error ?? "获取 Speechmatics token 失败。");
+    }
+
+    const client = new RealtimeClient({
+      url: payload.url,
+      appId: "concord-demo"
     });
+
+    client.addEventListener("receiveMessage", (event) => {
+      handleSpeechmaticsMessage(event.data);
+    });
+
+    await client.start(payload.token, {
+      audio_format: {
+        type: "raw",
+        encoding: "pcm_s16le",
+        sample_rate: 16000
+      },
+      transcription_config: {
+        language: payload.language,
+        enable_partials: true,
+        max_delay: payload.maxDelay,
+        operating_point: payload.operatingPoint ?? undefined
+      }
+    });
+
+    speechmaticsClientRef.current = client;
+    return client;
   }
 
   function flushPcmFrames(sendPartial: boolean) {
-    const socket = socketRef.current;
+    const client = speechmaticsClientRef.current;
 
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
+    if (!client) {
       return;
     }
 
     while (pcmBufferRef.current.length >= PCM_FRAME_SAMPLES) {
       const frame = pcmBufferRef.current.slice(0, PCM_FRAME_SAMPLES);
       pcmBufferRef.current = pcmBufferRef.current.slice(PCM_FRAME_SAMPLES);
-      const frameBytes = int16ArrayToUint8Array(frame);
-      const metadataBytes = new TextEncoder().encode(`TSMETA::${Date.now()}\n`);
-      const payload = new Uint8Array(metadataBytes.length + frameBytes.length);
-      payload.set(metadataBytes, 0);
-      payload.set(frameBytes, metadataBytes.length);
-      socket.send(payload);
+      client.sendAudio(int16ArrayToUint8Array(frame));
     }
 
     if (sendPartial && pcmBufferRef.current.length > 0) {
-      const frameBytes = int16ArrayToUint8Array(pcmBufferRef.current);
-      const metadataBytes = new TextEncoder().encode(`TSMETA::${Date.now()}\n`);
-      const payload = new Uint8Array(metadataBytes.length + frameBytes.length);
-      payload.set(metadataBytes, 0);
-      payload.set(frameBytes, metadataBytes.length);
-      socket.send(payload);
+      client.sendAudio(int16ArrayToUint8Array(pcmBufferRef.current));
       pcmBufferRef.current = new Int16Array(0);
     }
   }
@@ -266,7 +269,7 @@ export function ReportSession({ elder }: ReportSessionProps) {
         }
       });
 
-      await openAsrSocket();
+      await openSpeechmaticsClient();
 
       const audioContext = new AudioContext();
       await audioContext.audioWorklet.addModule("/audio-worklet-recorder.js");
@@ -284,10 +287,14 @@ export function ReportSession({ elder }: ReportSessionProps) {
 
       pcmBufferRef.current = new Int16Array(0);
       autoSyncDraftRef.current = true;
+      finalSegmentsRef.current = [];
+      partialTranscriptRef.current = "";
+      recordingStartedAtRef.current = Date.now();
+      firstTranscriptAtRef.current = null;
       setLatencyLabel(null);
 
       workletNode.port.onmessage = (event: MessageEvent<Float32Array>) => {
-        if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+        if (!speechmaticsClientRef.current) {
           return;
         }
 
@@ -312,7 +319,7 @@ export function ReportSession({ elder }: ReportSessionProps) {
     } catch (currentError) {
       stream?.getTracks().forEach((track) => track.stop());
       teardownAudioPipeline();
-      closeAsrSocket();
+      closeSpeechmaticsClient();
       setAsrPending(false);
       setIsRecording(false);
       setError(currentError instanceof Error ? currentError.message : "录音启动失败");
@@ -320,7 +327,7 @@ export function ReportSession({ elder }: ReportSessionProps) {
   }
 
   function handleStopRecording() {
-    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+    if (!speechmaticsClientRef.current) {
       teardownAudioPipeline();
       setIsRecording(false);
       setAsrPending(false);
@@ -328,7 +335,11 @@ export function ReportSession({ elder }: ReportSessionProps) {
     }
 
     flushPcmFrames(true);
-    socketRef.current.send(JSON.stringify({ type: "stop" }));
+    void speechmaticsClientRef.current.stopRecognition().catch((currentError: unknown) => {
+      setError(currentError instanceof Error ? currentError.message : "结束实时转写失败");
+      setAsrPending(false);
+      closeSpeechmaticsClient();
+    });
     teardownAudioPipeline();
     setIsRecording(false);
   }
@@ -371,13 +382,17 @@ export function ReportSession({ elder }: ReportSessionProps) {
   function handleReset() {
     teardownAudioPipeline();
 
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({ type: "stop" }));
+    if (speechmaticsClientRef.current) {
+      void speechmaticsClientRef.current.stopRecognition({ noTimeout: true }).catch(() => {});
     }
 
-    closeAsrSocket();
+    closeSpeechmaticsClient();
     pcmBufferRef.current = new Int16Array(0);
     autoSyncDraftRef.current = true;
+    finalSegmentsRef.current = [];
+    partialTranscriptRef.current = "";
+    recordingStartedAtRef.current = null;
+    firstTranscriptAtRef.current = null;
 
     setIsRecording(false);
     setHasRecording(false);
