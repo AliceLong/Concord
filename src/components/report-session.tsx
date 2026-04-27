@@ -1,10 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { RealtimeClient, type RealtimeServerMessage } from "@speechmatics/real-time-client";
-import { Calendar, Check, Mic, RefreshCcw, Square, Sparkles } from "lucide-react";
+import { Calendar, Mic, RefreshCcw, Square, Sparkles } from "lucide-react";
 import { concatInt16Arrays, downsampleToInt16Pcm, int16ArrayToUint8Array, PCM_FRAME_SAMPLES } from "@/lib/audio/pcm";
-import type { CareModuleId } from "@/lib/care-modules";
+import { serializeCareModuleIds, type CareModuleId } from "@/lib/care-modules";
+import {
+  buildReportSessionStorageKey,
+  clearPersistedReportSession,
+  readPersistedReportSession,
+  writePersistedReportSession
+} from "@/lib/report-session-storage";
 import type { ElderlyProfile } from "@/types/elderly";
 import type { GeneratedReport } from "@/types/report";
 import styles from "@/components/report-session.module.css";
@@ -43,6 +50,7 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
 }
 
 export function ReportSession({ elder, selectedModules, selectedModuleTip }: ReportSessionProps) {
+  const router = useRouter();
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
@@ -55,6 +63,7 @@ export function ReportSession({ elder, selectedModules, selectedModuleTip }: Rep
   const firstTranscriptAtRef = useRef<number | null>(null);
   const finalSegmentsRef = useRef<string[]>([]);
   const partialTranscriptRef = useRef("");
+  const storageReadyRef = useRef(false);
 
   const [isSupported, setIsSupported] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
@@ -63,9 +72,9 @@ export function ReportSession({ elder, selectedModules, selectedModuleTip }: Rep
   const [sessionDate, setSessionDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [asrPending, setAsrPending] = useState(false);
   const [reportPending, setReportPending] = useState(false);
-  const [generatedReport, setGeneratedReport] = useState<GeneratedReport | null>(null);
   const [latencyLabel, setLatencyLabel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const storageKey = buildReportSessionStorageKey(elder.id, selectedModules);
 
   useEffect(() => {
     if (
@@ -82,6 +91,47 @@ export function ReportSession({ elder, selectedModules, selectedModuleTip }: Rep
       closeSpeechmaticsClient();
     };
   }, []);
+
+  useEffect(() => {
+    const persisted = readPersistedReportSession(storageKey);
+
+    if (persisted) {
+      autoSyncDraftRef.current = false;
+      setDraft(persisted.draft);
+      setSessionDate(persisted.sessionDate || new Date().toISOString().slice(0, 10));
+      setHasRecording(Boolean(persisted.draft.trim()));
+    }
+
+    storageReadyRef.current = true;
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!storageReadyRef.current) {
+      return;
+    }
+
+    const existing = readPersistedReportSession(storageKey);
+    const generatedReport =
+      existing?.generatedReport &&
+      existing.generatedReport.transcript === draft &&
+      existing.generatedReport.sessionDate === (sessionDate || null)
+        ? existing.generatedReport
+        : null;
+
+    writePersistedReportSession(storageKey, {
+      draft,
+      sessionDate,
+      selectedModules,
+      generatedReport,
+      updatedAt: new Date().toISOString()
+    });
+  }, [draft, elder.id, selectedModules, sessionDate, storageKey]);
+
+  useEffect(() => {
+    if (!isRecording && !asrPending) {
+      setHasRecording(Boolean(draft.trim()));
+    }
+  }, [asrPending, draft, isRecording]);
 
   function teardownAudioPipeline() {
     workletNodeRef.current?.port.close();
@@ -247,7 +297,6 @@ export function ReportSession({ elder, selectedModules, selectedModuleTip }: Rep
 
   async function handleStartRecording() {
     setError(null);
-    setGeneratedReport(null);
 
     if (
       !isSupported ||
@@ -375,7 +424,14 @@ export function ReportSession({ elder, selectedModules, selectedModuleTip }: Rep
         throw new Error(body.error ?? "生成报告失败");
       }
 
-      setGeneratedReport(body.report);
+      writePersistedReportSession(storageKey, {
+        draft,
+        sessionDate,
+        selectedModules,
+        generatedReport: body.report,
+        updatedAt: new Date().toISOString()
+      });
+      router.push(`/report/${elder.id}/result?modules=${serializeCareModuleIds(selectedModules)}`);
     } catch (currentError) {
       setError(currentError instanceof Error ? currentError.message : "生成报告失败");
     } finally {
@@ -402,9 +458,9 @@ export function ReportSession({ elder, selectedModules, selectedModuleTip }: Rep
     setHasRecording(false);
     setAsrPending(false);
     setDraft("");
-    setGeneratedReport(null);
     setLatencyLabel(null);
     setError(null);
+    clearPersistedReportSession(storageKey);
   }
 
   const statusLabel = isRecording ? "录音中" : asrPending ? "整理中" : hasRecording ? "准备生成" : "准备录音";
@@ -478,60 +534,6 @@ export function ReportSession({ elder, selectedModules, selectedModuleTip }: Rep
         </button>
       </div>
 
-      {generatedReport ? (
-        <section className={styles.reportSection}>
-          <div className={styles.reportPreview}>
-            <div className={styles.reportHeader}>
-              <p className={styles.reportTitle}>模块化结果</p>
-              <span className={styles.statusDone}>
-                <Check size={14} />
-                已生成
-              </span>
-            </div>
-            <div className={styles.moduleList}>
-              <div className={styles.moduleBlock}>
-                <p className={styles.moduleName}>【长者状态】</p>
-                <p className={styles.moduleContent}>
-                  状态标签：{generatedReport.elderStatus.statusTags.length ? generatedReport.elderStatus.statusTags.join("、") : "未提及"}
-                </p>
-                <p className={styles.moduleContent}>互动表现：{generatedReport.elderStatus.interactionPerformance ?? "未提及"}</p>
-                <p className={styles.moduleContent}>身体情况：{generatedReport.elderStatus.physicalCondition ?? "未提及"}</p>
-              </div>
-              <div className={styles.moduleBlock}>
-                <p className={styles.moduleName}>【已完成服务】</p>
-                <p className={styles.moduleContent}>
-                  服务项目：
-                  {generatedReport.completedServices.serviceItems.length
-                    ? generatedReport.completedServices.serviceItems.join("、")
-                    : "未提及"}
-                </p>
-                <p className={styles.moduleContent}>完成情况：{generatedReport.completedServices.completion ?? "未提及"}</p>
-                <p className={styles.moduleContent}>长者表现：{generatedReport.completedServices.elderPerformance ?? "未提及"}</p>
-              </div>
-              {generatedReport.moduleReports.map((item) => (
-                <div key={item.moduleId} className={styles.moduleBlock}>
-                  <p className={styles.moduleName}>【{item.moduleTitle}】</p>
-                  <p className={styles.moduleContent}>服务内容：{item.serviceContent ?? "未提及"}</p>
-                  <p className={styles.moduleContent}>长者反应：{item.elderResponse ?? "未提及"}</p>
-                  <p className={styles.moduleContent}>完成情况：{item.completion ?? "未提及"}</p>
-                  <p className={styles.moduleContent}>备注：{item.remarks ?? "未提及"}</p>
-                </div>
-              ))}
-              <div className={styles.moduleBlock}>
-                <p className={styles.moduleName}>【总结 / 特别事故 / 建议】</p>
-                <p className={styles.moduleContent}>总结：{generatedReport.summaryAndRemarks.summary ?? "未提及"}</p>
-                <p className={styles.moduleContent}>特别事故：{generatedReport.summaryAndRemarks.incident ?? "未提及"}</p>
-                <p className={styles.moduleContent}>后续建议：{generatedReport.summaryAndRemarks.recommendation ?? "未提及"}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.reportPreview}>
-            <p className={styles.reportTitle}>Report 文本</p>
-            <pre className={styles.pre}>{generatedReport.reportText}</pre>
-          </div>
-        </section>
-      ) : null}
     </section>
   );
 }

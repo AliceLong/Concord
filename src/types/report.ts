@@ -34,8 +34,23 @@ export const moduleStructuredReportSchema = z.object({
   summaryAndRemarks: summaryRemarksSectionSchema
 });
 
+export const generatedReportSchema = z.object({
+  elderId: z.string().min(1),
+  transcript: z.string().min(1),
+  sessionDate: z.string().nullable(),
+  selectedModules: z.array(z.string().min(1)),
+  elderStatus: elderStatusSectionSchema,
+  completedServices: completedServicesSectionSchema,
+  moduleReports: z.array(moduleReportItemSchema),
+  summaryAndRemarks: summaryRemarksSectionSchema,
+  reportText: z.string().min(1),
+  generatedAt: z.string().min(1),
+  model: z.string().nullable()
+});
+
 export type ModuleReportItem = z.infer<typeof moduleReportItemSchema>;
 export type ModuleStructuredReport = z.infer<typeof moduleStructuredReportSchema>;
+export type GeneratedReport = z.infer<typeof generatedReportSchema>;
 export type ElderStatusSection = z.infer<typeof elderStatusSectionSchema>;
 export type CompletedServicesSection = z.infer<typeof completedServicesSectionSchema>;
 export type SummaryRemarksSection = z.infer<typeof summaryRemarksSectionSchema>;
@@ -72,18 +87,4 @@ export interface AsrStreamEvent {
     serverToGoogleResultMs?: number;
     endToEndMs?: number;
   };
-}
-
-export interface GeneratedReport {
-  elderId: string;
-  transcript: string;
-  sessionDate: string | null;
-  selectedModules: string[];
-  elderStatus: ElderStatusSection;
-  completedServices: CompletedServicesSection;
-  moduleReports: ModuleReportItem[];
-  summaryAndRemarks: SummaryRemarksSection;
-  reportText: string;
-  generatedAt: string;
-  model: string | null;
 }
