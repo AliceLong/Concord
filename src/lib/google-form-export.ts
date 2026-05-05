@@ -69,6 +69,34 @@ function joinNonEmpty(values: Array<string | null | undefined>, separator = ", "
     .join(separator);
 }
 
+function cleanDraftValue(value: string | null | undefined): string {
+  if (!value) {
+    return "";
+  }
+
+  return value === "未提及" ? "" : value;
+}
+
+function normalizeChoiceValue(value: string | null | undefined, fallback = ""): string {
+  if (!value || value === "未提及") {
+    return fallback;
+  }
+
+  if (value === "无") {
+    return "沒有";
+  }
+
+  return value;
+}
+
+function looksLikeCompletionReason(value: string | null | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+
+  return /(未完成|未能|不足|不適|不适|拒絕|拒绝|時間不足|时间不足|中止|暫停|暂停)/u.test(value);
+}
+
 function collectModuleRemarks(moduleReports: ModuleReportItem[], moduleIds: string[]) {
   return joinNonEmpty(
     moduleReports
@@ -101,22 +129,37 @@ function buildElderStatus(report: GeneratedReport): string {
 }
 
 function buildGoogleFormRow(elder: ElderlyProfile, report: GeneratedReport): unknown[] {
-  const hasCognitiveModule = report.moduleReports.some((item) =>
-    ["short_term_memory", "attention_training", "emotional_healing"].includes(item.moduleId)
-  );
-  const hasMotionModule = report.moduleReports.some((item) => item.moduleId === "assisted_training");
-  const cognitiveReason = collectModuleRemarks(report.moduleReports, ["short_term_memory", "attention_training", "emotional_healing"]);
-  const motionReason = collectModuleRemarks(report.moduleReports, ["assisted_training"]);
+  const cognitiveModuleIds = [
+    "reality_orientation",
+    "short_term_memory",
+    "reminiscence_therapy",
+    "delayed_recall",
+    "verbal_fluency",
+    "arithmetic_training",
+    "association_training",
+    "auditory_attention_training"
+  ];
+  const hasCognitiveModule = report.moduleReports.some((item) => cognitiveModuleIds.includes(item.moduleId));
+  const hasMotionModule = false;
+  const cognitiveReason = collectModuleRemarks(report.moduleReports, cognitiveModuleIds);
+  const motionReason = cleanDraftValue(report.formDraft.motionTrainingReason);
   const environmentStatus =
-    report.summaryAndRemarks.incident && report.summaryAndRemarks.incident !== "无"
-      ? report.summaryAndRemarks.incident
-      : "沒有";
-  const basicServiceReason =
-    report.completedServices.completion && report.completedServices.completion !== "已完成"
-      ? report.completedServices.completion
-      : report.completedServices.serviceItems.length > 0
-        ? "已完成所有項目"
-        : "";
+    normalizeChoiceValue(report.formDraft.environmentIssue, report.summaryAndRemarks.incident && report.summaryAndRemarks.incident !== "无" ? report.summaryAndRemarks.incident : "沒有");
+  const basicServices =
+    cleanDraftValue(report.formDraft.basicServices) || report.completedServices.serviceItems.join(", ");
+  const basicServiceReason = looksLikeCompletionReason(report.formDraft.basicServiceReason)
+    ? cleanDraftValue(report.formDraft.basicServiceReason)
+    : "";
+  const hasCognitiveModuleChoice =
+    normalizeChoiceValue(
+      report.formDraft.cognitiveTrainingProvided,
+      hasCognitiveModule ? "有" : "沒有"
+    );
+  const hasMotionModuleChoice = normalizeChoiceValue(
+    report.formDraft.motionTrainingProvided,
+    hasMotionModule ? "有" : "沒有"
+  );
+  const specialServiceProvided = normalizeChoiceValue(report.formDraft.specialServiceProvided, "沒有");
 
   return [
     new Date(report.generatedAt),
@@ -125,32 +168,34 @@ function buildGoogleFormRow(elder: ElderlyProfile, report: GeneratedReport): unk
     report.sessionDate ?? "",
     "",
     elder.fullName,
-    "",
-    "",
+    cleanDraftValue(report.formDraft.attendanceCount),
+    cleanDraftValue(report.formDraft.attendees),
     environmentStatus,
     buildElderStatus(report),
-    "",
-    "",
-    "",
-    report.completedServices.serviceItems.join(", "),
+    cleanDraftValue(report.formDraft.bloodPressure),
+    cleanDraftValue(report.formDraft.heartRate),
+    cleanDraftValue(report.formDraft.bloodOxygen),
+    basicServices,
     basicServiceReason,
-    hasCognitiveModule ? "有" : "沒有",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    cognitiveReason,
-    hasMotionModule ? "有" : "沒有",
+    hasCognitiveModuleChoice,
+    cleanDraftValue(report.formDraft.realityOrientationSharing),
+    cleanDraftValue(report.formDraft.realityOrientationQuestioning),
+    cleanDraftValue(report.formDraft.shortTermMemoryObjects),
+    cleanDraftValue(report.formDraft.shortTermMemoryCards),
+    cleanDraftValue(report.formDraft.reminiscenceTherapy),
+    cleanDraftValue(report.formDraft.delayedRecall),
+    cleanDraftValue(report.formDraft.verbalFluencyNaming),
+    cleanDraftValue(report.formDraft.verbalFluencyRepeat),
+    cleanDraftValue(report.formDraft.arithmeticTraining),
+    cleanDraftValue(report.formDraft.associationTrainingChain),
+    cleanDraftValue(report.formDraft.associationTrainingHint),
+    cleanDraftValue(report.formDraft.auditoryAttentionDigits),
+    cleanDraftValue(report.formDraft.auditoryAttentionMenu),
+    cleanDraftValue(report.formDraft.auditoryAttentionSpotDifference),
+    looksLikeCompletionReason(report.formDraft.cognitiveTrainingReason)
+      ? cleanDraftValue(report.formDraft.cognitiveTrainingReason)
+      : "",
+    hasMotionModuleChoice,
     "",
     "",
     "",
@@ -169,13 +214,13 @@ function buildGoogleFormRow(elder: ElderlyProfile, report: GeneratedReport): unk
     "",
     "",
     motionReason,
-    "沒有",
-    "",
-    "",
+    specialServiceProvided,
+    cleanDraftValue(report.formDraft.specialServiceDetail),
+    cleanDraftValue(report.formDraft.valueAddedService),
     buildSummaryField(report),
-    "",
-    "",
-    report.reportText
+    cleanDraftValue(report.formDraft.brainTraining),
+    cleanDraftValue(report.formDraft.trainingOther),
+    ""
   ];
 }
 

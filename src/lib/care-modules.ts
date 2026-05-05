@@ -1,75 +1,84 @@
 export const careModules = [
   {
-    id: "respectful_companionship",
-    title: "观赏尊卑",
-    examples: "情绪陪伴、日常互动",
-    focusPoints: ["情绪状态", "互动表现", "陪伴内容", "交流反馈"],
-    keywords: ["情绪", "陪伴", "互动", "聊天", "交流", "安抚", "开心", "稳定"],
-    fallbackLead: "本次照护围绕陪伴互动与情绪观察展开。"
+    id: "reality_orientation",
+    title: "现实导向",
+    examples: "新闻分享、日期时间地点定向",
+    focusPoints: ["新闻或资讯分享内容", "日期时间地点辨识", "即时反应", "参与度"],
+    keywords: ["新闻", "资讯", "日期", "星期", "季节", "时间", "地点", "地區", "现实导向"],
+    aliases: ["現實導向", "现实定向", "定向训练", "日期时间地点定向", "新聞分享"],
+    fallbackLead: "本次照护涉及现实导向训练与定向能力观察。"
   },
   {
     id: "short_term_memory",
     title: "短期记忆",
-    examples: "记忆训练、认知引导",
-    focusPoints: ["记忆训练表现", "回忆能力", "认知反应", "训练配合度"],
-    keywords: ["记忆", "回忆", "认知", "训练", "专注", "回答", "反应"],
-    fallbackLead: "本次照护涉及短期记忆训练与认知引导。"
+    examples: "图片记忆、位置记忆、延迟回忆",
+    focusPoints: ["记忆编码表现", "位置记忆表现", "延迟回忆能力", "训练配合度"],
+    keywords: ["记忆", "回忆", "图片", "物件", "啤牌", "位置", "回答", "记得"],
+    aliases: ["短期記憶", "记忆训练", "圖片記憶", "位置记忆", "位置記憶"],
+    fallbackLead: "本次照护重点记录了短期记忆训练表现。"
   },
   {
-    id: "emotional_healing",
-    title: "领域治愈",
-    examples: "情绪安抚、心理支持",
-    focusPoints: ["情绪安抚方式", "心理状态", "安抚后反馈", "异常情绪表现"],
-    keywords: ["安抚", "焦虑", "紧张", "低落", "情绪", "心理", "支持", "平复"],
-    fallbackLead: "本次照护重点记录了情绪安抚与心理支持情况。"
+    id: "reminiscence_therapy",
+    title: "怀缅治疗",
+    examples: "旧物辨识、怀旧歌曲、往事分享",
+    focusPoints: ["怀旧素材辨识", "往事分享内容", "情绪反应", "参与度"],
+    keywords: ["怀旧", "旧物", "地标", "明星", "歌曲", "往事", "分享", "后生"],
+    aliases: ["懷緬治療", "怀旧治疗", "懷舊分享", "往事分享", "旧物辨识"],
+    fallbackLead: "本次照护涉及怀缅治疗与往事分享。"
   },
   {
-    id: "medication_compliance",
-    title: "问患者遵医嘱",
-    examples: "用药提醒、健康询问",
-    focusPoints: ["服药情况", "遵医嘱表现", "身体反馈", "不适或异常状态"],
-    keywords: ["服药", "用药", "药", "遵医嘱", "医生", "提醒", "不适", "反馈"],
-    fallbackLead: "本次照护重点关注长者是否按时服药及遵医嘱情况。"
+    id: "delayed_recall",
+    title: "延迟回忆",
+    examples: "延迟提取、回忆先前记忆内容",
+    focusPoints: ["延迟回忆表现", "提示后反应", "记忆保持度", "回答完整度"],
+    keywords: ["还记得", "記得", "三件物件", "回忆", "读出", "延迟回忆"],
+    aliases: ["延遲回憶", "延迟提取", "回忆提取", "延後回憶", "4.0回忆"],
+    fallbackLead: "本次照护记录了长者的延迟回忆表现。"
   },
   {
-    id: "condition_tracking",
-    title: "跟踪病患",
-    examples: "状态观察、异常记录",
-    focusPoints: ["生命体征或状态变化", "异常表现", "观察结论", "后续跟进点"],
-    keywords: ["观察", "状态", "异常", "记录", "跟进", "变化", "咳嗽", "气喘", "疼痛"],
-    fallbackLead: "本次照护以状态观察与异常记录为主。"
+    id: "verbal_fluency",
+    title: "说话流畅度",
+    examples: "类别命名、句子复述",
+    focusPoints: ["词汇提取能力", "句子复述表现", "语言流畅度", "反应速度"],
+    keywords: ["蔬菜", "小食", "国家", "点心", "地區", "廚房", "廁所", "跟读", "复述"],
+    aliases: ["說話流暢度", "语言流畅度", "語言流暢度", "类别命名", "句子复述", "句子複述"],
+    fallbackLead: "本次照护重点观察了长者的说话流畅度与语言表达能力。"
   },
   {
-    id: "light_interaction",
-    title: "逗弄",
-    examples: "轻松互动、陪伴娱乐",
-    focusPoints: ["娱乐互动内容", "参与度", "情绪反馈", "互动效果"],
-    keywords: ["娱乐", "互动", "玩", "笑", "轻松", "陪伴", "回应"],
-    fallbackLead: "本次照护包含轻松互动与陪伴娱乐内容。"
+    id: "arithmetic_training",
+    title: "运算",
+    examples: "加减运算、生活情景计算",
+    focusPoints: ["加减运算表现", "数字理解", "情景计算反应", "正确率"],
+    keywords: ["加减", "运算", "计算", "啤牌", "骰子", "找续", "街市", "数字"],
+    aliases: ["運算", "加减运算", "加減運算", "情景计算", "數字計算"],
+    fallbackLead: "本次照护包含基础运算与数字理解训练。"
   },
   {
-    id: "assisted_training",
-    title: "帮助训练",
-    examples: "行动辅助、功能训练",
-    focusPoints: ["行动辅助情况", "训练项目", "功能表现", "安全风险"],
-    keywords: ["行路", "步态", "训练", "扶", "搀扶", "辅助", "行动", "站立"],
-    fallbackLead: "本次照护涉及行动辅助与功能训练。"
+    id: "association_training",
+    title: "联想训练",
+    examples: "词语接龙、提示联想",
+    focusPoints: ["联想能力", "接龙反应", "提示后回答", "思维灵活度"],
+    keywords: ["接龙", "联想", "提示", "词语", "答案", "深水埗", "补衫"],
+    aliases: ["聯想訓練", "词语接龙", "詞語接龍", "提示联想", "联想能力"],
+    fallbackLead: "本次照护记录了长者的联想训练表现。"
   },
   {
-    id: "attention_training",
-    title: "接觉/专注力训练",
-    examples: "注意力训练、认知练习",
-    focusPoints: ["专注表现", "注意力持续时间", "认知练习反馈", "分心情况"],
-    keywords: ["专注", "注意力", "认知", "练习", "分心", "集中", "训练"],
-    fallbackLead: "本次照护重点记录了专注力训练与认知练习表现。"
+    id: "auditory_attention_training",
+    title: "听觉/专注力训练",
+    examples: "数字复述、餐单记忆、找不同",
+    focusPoints: ["听觉记忆表现", "专注力持续时间", "数字复述反应", "视觉专注表现"],
+    keywords: ["数字", "顺序", "倒序", "酒楼", "餐厅", "餐", "找不同", "专注", "听觉"],
+    aliases: ["聽覺/專注力訓練", "听觉训练", "專注力訓練", "数字复述", "數字複述", "找不同"],
+    fallbackLead: "本次照护重点观察了长者的听觉记忆与专注力表现。"
   },
   {
-    id: "life_rescue",
-    title: "生命救援",
-    examples: "紧急情况、风险处理",
-    focusPoints: ["突发情况", "风险处理", "即时措施", "后续处置建议"],
-    keywords: ["紧急", "风险", "呼救", "跌倒", "异常", "处理", "急救", "危险"],
-    fallbackLead: "本次照护涉及紧急情况判断与风险处理。"
+    id: "vital_signs",
+    title: "生命徵象",
+    examples: "血压、心跳、血氧记录",
+    focusPoints: ["血压读数", "心跳情况", "血氧情况", "量度结果是否异常"],
+    keywords: ["血压", "上压", "下压", "心跳", "脉搏", "血氧", "生命征象", "生命徵象", "量度"],
+    aliases: ["生命征象", "生命体征", "生命體徵", "生命表征", "血压心跳血氧", "生理指标"],
+    fallbackLead: "本次照护包含生命徵象量度与基本生理状态观察。"
   }
 ] as const;
 
@@ -128,7 +137,7 @@ export function buildCareModulePromptContext(moduleIds: CareModuleId[]): string 
   return getCareModulesByIds(moduleIds)
     .map(
       (module) =>
-        `- ${module.title}（${module.id}）：适用于${module.examples}；请重点关注${module.focusPoints.join("、")}`
+        `- ${module.title}（${module.id}）：适用于${module.examples}；请重点关注${module.focusPoints.join("、")}；常见同义表达包括${module.aliases.join("、")}`
     )
     .join("\n");
 }

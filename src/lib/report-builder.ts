@@ -1,7 +1,7 @@
 import { getCareModulesByIds, type CareModuleId } from "@/lib/care-modules";
 import { buildModuleReportText } from "@/lib/report-format";
 import type { ElderlyProfile } from "@/types/elderly";
-import type { GeneratedReport, ModuleReportItem } from "@/types/report";
+import type { FormDraftSection, GeneratedReport, ModuleReportItem } from "@/types/report";
 
 function includesAny(text: string, keywords: readonly string[]): boolean {
   return keywords.some((keyword) => text.includes(keyword));
@@ -63,6 +63,40 @@ export function generateReport(
     moduleReports,
     summaryAndRemarks
   });
+  const formDraft: FormDraftSection = {
+    attendanceCount: null,
+    attendees: null,
+    environmentIssue: "沒有",
+    bloodPressure: null,
+    heartRate: null,
+    bloodOxygen: null,
+    basicServices: completedServices.serviceItems.join("、") || null,
+    basicServiceReason: completedServices.completion,
+    cognitiveTrainingProvided: moduleReports.length > 0 ? "有" : "沒有",
+    realityOrientationSharing: null,
+    realityOrientationQuestioning: null,
+    shortTermMemoryObjects: null,
+    shortTermMemoryCards: null,
+    reminiscenceTherapy: null,
+    delayedRecall: null,
+    verbalFluencyNaming: null,
+    verbalFluencyRepeat: null,
+    arithmeticTraining: null,
+    associationTrainingChain: null,
+    associationTrainingHint: null,
+    auditoryAttentionDigits: null,
+    auditoryAttentionMenu: null,
+    auditoryAttentionSpotDifference: null,
+    vitalSignsModule: null,
+    cognitiveTrainingReason: null,
+    motionTrainingProvided: "沒有",
+    motionTrainingReason: null,
+    specialServiceProvided: "沒有",
+    specialServiceDetail: null,
+    valueAddedService: null,
+    brainTraining: null,
+    trainingOther: null
+  };
 
   return {
     elderId: elder.id,
@@ -73,6 +107,7 @@ export function generateReport(
     completedServices,
     moduleReports,
     summaryAndRemarks,
+    formDraft,
     reportText,
     generatedAt: new Date().toISOString(),
     model: options?.model ?? null
