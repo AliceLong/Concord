@@ -1,0 +1,307 @@
+.dashboard {
+  position: relative;
+  width: min(100%, 390px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 37px 16px 78px;
+  overflow: hidden;
+  background: #fff7df;
+}
+
+.hero {
+  display: block;
+}
+
+.greeting {
+  margin: 0;
+  color: #1d1d17;
+  font-size: 24px;
+  line-height: 1.12;
+  font-weight: 800;
+}
+
+.summaryBadge {
+  display: none;
+}
+
+.weekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 29px;
+  padding: 0 6px;
+}
+
+.day,
+.dayActive {
+  display: grid;
+  place-items: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 66px;
+  border-radius: 14px;
+  color: #7f7869;
+}
+
+.day small,
+.dayActive small {
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.day strong,
+.dayActive strong {
+  color: inherit;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.dayActive {
+  background: #ffffff;
+  color: #4b463d;
+  box-shadow: 0 8px 20px rgba(55, 49, 28, 0.12);
+}
+
+.dayActive::after {
+  content: "";
+  width: 25px;
+  height: 4px;
+  border-radius: 999px;
+  background: #ffc400;
+}
+
+.section {
+  margin-top: 18px;
+}
+
+.sectionTitle {
+  margin: 0 0 10px;
+  color: #28271f;
+  font-size: 24px;
+  line-height: 1.18;
+  font-weight: 800;
+}
+
+.primaryList,
+.secondaryList {
+  display: grid;
+  gap: 10px;
+}
+
+.taskCard,
+.miniCard,
+.emptyCard {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(107, 101, 77, 0.12);
+  background: #ffffff;
+  color: #302d24;
+  text-decoration: none;
+}
+
+.taskCard {
+  gap: 12px;
+  min-height: 96px;
+  padding: 0 11px 0 0;
+  border-radius: 16px;
+}
+
+.taskCard > svg {
+  display: none;
+}
+
+.avatar,
+.miniAvatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #d9ebd0;
+  color: transparent;
+}
+
+.avatar {
+  width: 96px;
+  height: 96px;
+}
+
+.miniAvatar {
+  width: 64px;
+  height: 64px;
+}
+
+.avatar svg,
+.miniAvatar svg {
+  display: none;
+}
+
+.avatar::before,
+.miniAvatar::before {
+  content: "";
+  position: absolute;
+  left: 28%;
+  top: 14%;
+  width: 48%;
+  height: 49%;
+  background: #ffc526;
+  clip-path: polygon(49% 0%, 96% 27%, 81% 82%, 25% 92%, 0 38%);
+  transform: rotate(-18deg);
+}
+
+.avatar::after,
+.miniAvatar::after {
+  content: "";
+  position: absolute;
+  left: 42%;
+  top: 41%;
+  width: 24%;
+  height: 24%;
+  border-radius: 999px;
+  background: #bc7900;
+  box-shadow: -31px 21px 0 -5px #96ad51, -10px 27px 0 -5px #96ad51;
+}
+
+.miniAvatar::after {
+  box-shadow: -21px 15px 0 -4px #96ad51, -7px 19px 0 -4px #96ad51;
+}
+
+.taskMain {
+  min-width: 0;
+  flex: 1;
+}
+
+.taskTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.taskTop h3,
+.miniMain strong {
+  margin: 0;
+  color: #2b2921;
+  font-size: 20px;
+  line-height: 1.15;
+  font-weight: 800;
+}
+
+.taskTop span {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #797466;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.taskMain p {
+  margin: 25px 0 0;
+  color: #696356;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.miniCard,
+.emptyCard {
+  gap: 12px;
+  min-height: 76px;
+  padding: 8px;
+  border-radius: 9px;
+}
+
+.miniMain {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.miniMain strong {
+  font-size: 20px;
+}
+
+.miniMain span {
+  color: #7a7468;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.overduePill,
+.soonPill {
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  height: 27px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.overduePill {
+  background: #ffe0d8;
+  color: #804437;
+}
+
+.soonPill {
+  background: #fff29d;
+  color: #7a6613;
+}
+
+.emptyCard {
+  justify-content: center;
+  color: #77705f;
+  font-size: 15px;
+}
+
+.bottomNav {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 10;
+  width: min(100%, 390px);
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  min-height: 60px;
+  padding: 7px 22px 9px;
+  border-top: 1px solid rgba(107, 101, 77, 0.12);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.bottomNav span {
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  color: #555247;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.bottomNav svg {
+  width: 24px;
+  height: 24px;
+  color: currentColor;
+}
+
+.navActive {
+  color: #202017 !important;
+  font-weight: 800;
+}
+
+@media (max-width: 360px) {
+  .dashboard {
+    padding-inline: 12px;
+  }
+
+  .taskTop span {
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,51 @@
+.page {
+  min-height: 100dvh;
+  background: #fff7df;
+  color: #222016;
+}
+
+.shell {
+  width: min(100%, 390px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 54px 15px 15px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: #fff7df;
+}
+
+.topBar {
+  position: relative;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  min-height: 36px;
+}
+
+.backButton {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  transform: translateY(-50%);
+  color: #8a8577;
+  text-decoration: none;
+}
+
+.title {
+  margin: 0;
+  color: #161710;
+  font-size: 23px;
+  line-height: 1.12;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+@media (min-width: 720px) {
+  .page {
+    background: #cfcfcf;
+  }
+}

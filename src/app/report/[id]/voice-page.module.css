@@ -1,46 +1,46 @@
 .page {
   min-height: 100dvh;
   background: #fff7df;
-  color: #242219;
+  color: #222016;
 }
 
 .shell {
   width: min(100%, 390px);
   min-height: 100dvh;
   margin: 0 auto;
-  padding: 54px 15px 0;
+  padding: 54px 0 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
   background: #fff7df;
 }
 
-.header {
+.topBar {
   position: relative;
   display: grid;
-  grid-template-columns: 44px 1fr 44px;
-  align-items: start;
+  justify-items: center;
+  align-items: center;
+  padding: 0 56px;
   min-height: 72px;
 }
 
 .backButton,
 .closeButton {
+  position: absolute;
+  top: 0;
   display: grid;
   place-items: center;
   width: 44px;
   height: 44px;
-  border-radius: 999px;
   color: #8a8577;
   text-decoration: none;
 }
 
-.headerMain {
-  display: grid;
-  justify-items: center;
-  min-width: 0;
+.backButton {
+  left: 16px;
 }
 
-.kicker,
-.roomChip,
-.elderMeta {
-  display: none;
+.closeButton {
+  right: 16px;
 }
 
 .title {
@@ -50,7 +50,6 @@
   line-height: 1.12;
   font-weight: 800;
   letter-spacing: 0;
-  text-align: center;
 }
 
 .progress {
@@ -61,29 +60,18 @@
   margin-top: 11px;
 }
 
-.progress span {
+.progressSegment {
   height: 4px;
   border-radius: 999px;
   background: #d6d2c6;
 }
 
-.progress .progressActive {
+.progressSegmentActive {
   background: #ffc400;
 }
 
 @media (min-width: 720px) {
   .page {
     background: #cfcfcf;
-    padding: 0;
-  }
-}
-
-@media (max-width: 380px) {
-  .shell {
-    padding-top: 46px;
-  }
-
-  .progress {
-    width: 198px;
   }
 }

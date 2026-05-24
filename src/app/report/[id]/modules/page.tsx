@@ -3,18 +3,18 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { CareModulePicker } from "@/components/care-module-picker";
 import { parseCareModuleIds } from "@/lib/care-modules";
-import { getElderById } from "@/server/repositories/elder";
-import styles from "@/app/report/report-page.module.css";
+import { getElderById, getOptionalModulesForElder, getRequiredModulesForElder } from "@/server/repositories/elder";
+import styles from "@/app/report/[id]/modules/modules-page.module.css";
 
 export default async function CareModulesPage({
   params,
   searchParams
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ modules?: string | string[] }>;
+  searchParams: Promise<{ modules?: string | string[]; taskId?: string }>;
 }) {
   const { id } = await params;
-  const { modules } = await searchParams;
+  const { modules, taskId } = await searchParams;
   const elder = getElderById(id);
 
   if (!elder) {
@@ -26,23 +26,20 @@ export default async function CareModulesPage({
   return (
     <main className={styles.page}>
       <section className={styles.shell}>
-        <div className={styles.header}>
+        <div className={styles.topBar}>
           <Link href="/" className={styles.backButton}>
-            <ChevronLeft size={18} />
+            <ChevronLeft size={36} strokeWidth={2.4} />
           </Link>
-          <div className={styles.headerMain}>
-            <p className={styles.kicker}>Concord</p>
-            <h1 className={styles.title}>{elder.fullName}</h1>
-          </div>
-          <span className={styles.roomChip}>{elder.roomNo ?? "未设定房间"}</span>
+          <h1 className={styles.title}>活动选择</h1>
         </div>
 
-        <div className={styles.elderMeta}>
-          <span className={styles.metaBadge}>风险 {elder.riskLevel}</span>
-          {elder.medicalNotes ? <span className={styles.metaText}>{elder.medicalNotes}</span> : null}
-        </div>
-
-        <CareModulePicker elderId={elder.id} initialSelected={selectedModules} />
+        <CareModulePicker
+          elderId={elder.id}
+          taskId={taskId}
+          initialSelected={selectedModules}
+          requiredModules={getRequiredModulesForElder(elder.id)}
+          optionalModules={getOptionalModulesForElder(elder.id)}
+        />
       </section>
     </main>
   );

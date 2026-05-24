@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
 import {
   listCareModules,
   serializeCareModuleIds,
@@ -13,15 +12,30 @@ import styles from "@/components/care-module-picker.module.css";
 
 interface CareModulePickerProps {
   elderId: string;
+  taskId?: string;
   initialSelected: CareModuleId[];
+  requiredModules: CareModuleId[];
+  optionalModules: CareModuleId[];
 }
 
-export function CareModulePicker({ elderId, initialSelected }: CareModulePickerProps) {
+export function CareModulePicker({
+  elderId,
+  taskId,
+  initialSelected,
+  requiredModules
+}: CareModulePickerProps) {
   const router = useRouter();
-  const [selectedModules, setSelectedModules] = useState<CareModuleId[]>(initialSelected);
-  const modules = useMemo(() => listCareModules(), []);
+  const defaultSelected = initialSelected.length ? initialSelected : requiredModules;
+  const [selectedModules, setSelectedModules] = useState<CareModuleId[]>([
+    ...new Set([...requiredModules, ...defaultSelected])
+  ]);
+  const modules = useMemo(() => [...listCareModules()].sort((a, b) => a.number - b.number), []);
 
   function toggleModule(module: CareModuleDefinition) {
+    if (requiredModules.includes(module.id)) {
+      return;
+    }
+
     setSelectedModules((current) =>
       current.includes(module.id) ? current.filter((item) => item !== module.id) : [...current, module.id]
     );
@@ -32,37 +46,32 @@ export function CareModulePicker({ elderId, initialSelected }: CareModulePickerP
       return;
     }
 
-    router.push(`/report/${elderId}?modules=${serializeCareModuleIds(selectedModules)}`);
+    const taskQuery = taskId ? `&taskId=${encodeURIComponent(taskId)}` : "";
+    router.push(`/report/${elderId}?modules=${serializeCareModuleIds(selectedModules)}${taskQuery}`);
   }
 
   return (
     <section className={styles.wrapper}>
-      <div className={styles.header}>
-        <div>
-          <p className={styles.title}>选择本次照护模块</p>
-          <p className={styles.helper}>请先勾选本次服务涉及的模块，后续录音页会按模块提示记录重点。</p>
-        </div>
-        <span className={styles.count}>{selectedModules.length} 已选</span>
-      </div>
-
-      <div className={styles.grid}>
+      <div className={styles.honeycomb} aria-label="活动模块">
         {modules.map((module) => {
           const selected = selectedModules.includes(module.id);
+          const required = requiredModules.includes(module.id);
 
           return (
             <button
               key={module.id}
               type="button"
-              className={selected ? `${styles.card} ${styles.cardActive}` : styles.card}
+              className={[
+                styles.hex,
+                selected ? styles.cardActive : "",
+                required ? styles.cardRequired : ""
+              ].join(" ")}
               onClick={() => toggleModule(module)}
+              aria-pressed={selected}
+              title={required ? "必选项目，已强制勾选" : selected ? "已选择，点击取消" : "点击选择"}
             >
-              <div className={styles.cardHeader}>
-                <p className={styles.cardTitle}>{module.title}</p>
-                <span className={selected ? `${styles.tag} ${styles.tagActive}` : styles.tag}>
-                  {selected ? "已选择" : "点击选择"}
-                </span>
-              </div>
-              <p className={styles.cardBody}>{module.examples}</p>
+              <span className={styles.hexNumber}>【{module.number}】</span>
+              <span className={styles.hexTitle}>{formatModuleTitle(module)}</span>
             </button>
           );
         })}
@@ -70,8 +79,20 @@ export function CareModulePicker({ elderId, initialSelected }: CareModulePickerP
 
       <button className={styles.nextButton} type="button" onClick={handleNext} disabled={selectedModules.length === 0}>
         <span>下一步</span>
-        <ArrowRight size={16} />
       </button>
     </section>
   );
+}
+
+function formatModuleTitle(module: CareModuleDefinition): string {
+  switch (module.id) {
+    case "delayed_recall":
+      return "问长者\n还记得...";
+    case "auditory_attention_training":
+      return "听觉/\n专注力训练";
+    case "fall_prevention_exercise":
+      return "耆力/\n防跌运动";
+    default:
+      return module.title;
+  }
 }

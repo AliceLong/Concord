@@ -4,7 +4,7 @@
 
 :root {
   color-scheme: light;
-  --background: #f5f8fd;
+  --background: #fff8df;
   --foreground: #16253a;
   --surface: rgba(255, 255, 255, 0.9);
   --surface-strong: #ffffff;
@@ -20,10 +20,7 @@
 
 html {
   min-height: 100%;
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 28%),
-    radial-gradient(circle at top right, rgba(245, 183, 0, 0.18), transparent 24%),
-    linear-gradient(180deg, #f7faff 0%, #f3f7fd 100%);
+  background: #fff8df;
 }
 
 body {

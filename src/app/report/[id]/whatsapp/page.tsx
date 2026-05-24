@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ChevronLeft, X } from "lucide-react";
-import { ReportResultPage } from "@/components/report-result-page";
+import { WhatsAppReportPage } from "@/components/whatsapp-report-page";
 import { parseCareModuleIds, serializeCareModuleIds } from "@/lib/care-modules";
 import { getElderById } from "@/server/repositories/elder";
 import styles from "@/app/report/report-page.module.css";
 
-export default async function ReportResultRoute({
+export default async function WhatsAppRoute({
   params,
   searchParams
 }: {
@@ -24,7 +24,7 @@ export default async function ReportResultRoute({
   const selectedModules = parseCareModuleIds(modules);
 
   if (selectedModules.length === 0) {
-    redirect(`/report/${id}/modules`);
+    redirect(`/report/${id}/modules${taskId ? `?taskId=${encodeURIComponent(taskId)}` : ""}`);
   }
 
   return (
@@ -32,30 +32,25 @@ export default async function ReportResultRoute({
       <section className={styles.shell}>
         <div className={styles.header}>
           <Link
-            href={`/report/${id}/analysis?modules=${serializeCareModuleIds(selectedModules)}${taskId ? `&taskId=${encodeURIComponent(taskId)}` : ""}`}
+            href={`/report/${id}/result?modules=${serializeCareModuleIds(selectedModules)}${taskId ? `&taskId=${encodeURIComponent(taskId)}` : ""}`}
             className={styles.backButton}
           >
             <ChevronLeft size={18} />
           </Link>
           <div className={styles.headerMain}>
-            <h1 className={styles.title}>报告详情</h1>
-            <div className={styles.progress} aria-label="流程进度：第2步报告详情">
+            <h1 className={styles.title}>WhatsApp报告</h1>
+            <div className={styles.progress} aria-label="流程进度：第3步 WhatsApp 报告">
               <span className={styles.progressActive} />
               <span className={styles.progressActive} />
-              <span />
+              <span className={styles.progressActive} />
             </div>
           </div>
           <Link href="/" className={styles.closeButton} aria-label="关闭">
-            <X size={24} />
+            <X size={18} />
           </Link>
         </div>
 
-        <div className={styles.elderMeta}>
-          <span className={styles.metaBadge}>风险 {elder.riskLevel}</span>
-          {elder.medicalNotes ? <span className={styles.metaText}>{elder.medicalNotes}</span> : null}
-        </div>
-
-        <ReportResultPage elder={elder} taskId={taskId} selectedModules={selectedModules} />
+        <WhatsAppReportPage elder={elder} taskId={taskId} selectedModules={selectedModules} />
       </section>
     </main>
   );

@@ -10,21 +10,20 @@ function includesAny(text: string, keywords: readonly string[]): boolean {
 function buildFallbackModuleReports(selectedModules: CareModuleId[], transcript: string): ModuleReportItem[] {
   const normalized = transcript.toLowerCase();
   const modules = getCareModulesByIds(selectedModules);
-
-  const matchedModules = modules.filter(
-    (module) => includesAny(normalized, module.keywords) || selectedModules.length === 1
-  );
-  const effectiveModules = matchedModules.length > 0 ? matchedModules : modules.slice(0, 1);
   const transcriptLine = transcript.trim().endsWith("。") ? transcript.trim() : `${transcript.trim()}。`;
 
-  return effectiveModules.map((module) => ({
-    moduleId: module.id,
-    moduleTitle: module.title,
-    serviceContent: `${module.fallbackLead}${transcriptLine}`,
-    elderResponse: null,
-    completion: "已记录",
-    remarks: `建议后续继续围绕${module.focusPoints.slice(0, 2).join("、")}进行持续观察与记录。`
-  }));
+  return modules.map((careModule) => {
+    const matched = includesAny(normalized, careModule.keywords) || transcript.includes(`【${careModule.number}】`);
+
+    return {
+      moduleId: careModule.id,
+      moduleTitle: careModule.title,
+      serviceContent: matched ? `${careModule.fallbackLead}${transcriptLine}` : null,
+      elderResponse: matched ? null : null,
+      completion: matched ? "已记录" : null,
+      remarks: matched ? `建议后续继续围绕${careModule.focusPoints.slice(0, 2).join("、")}进行持续观察与记录。` : null
+    };
+  });
 }
 
 export function generateReport(
@@ -89,12 +88,12 @@ export function generateReport(
     auditoryAttentionSpotDifference: null,
     vitalSignsModule: null,
     cognitiveTrainingReason: null,
-    motionTrainingProvided: "沒有",
+    motionTrainingProvided: options?.selectedModules.includes("fall_prevention_exercise") ? "有" : "沒有",
     motionTrainingReason: null,
     specialServiceProvided: "沒有",
     specialServiceDetail: null,
     valueAddedService: null,
-    brainTraining: null,
+    brainTraining: options?.selectedModules.includes("brain_training") ? transcript : null,
     trainingOther: null
   };
 

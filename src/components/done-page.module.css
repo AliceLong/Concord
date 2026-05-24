@@ -1,0 +1,76 @@
+.wrapper {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 13px;
+  min-height: 100dvh;
+  margin: -54px -15px 0;
+  padding: 0 30px 94px;
+  text-align: center;
+  background: #eefdff;
+}
+
+.wrapper > svg {
+  width: 125px;
+  height: 125px;
+  padding: 28px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #a2eee6 0%, #77d7d6 100%);
+  color: #ffffff;
+  stroke-width: 2.4;
+}
+
+.wrapper h1 {
+  margin: 3px 0 0;
+  color: #232820;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.wrapper p {
+  max-width: 260px;
+  margin: 0;
+  color: #4f5a55;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.wrapper p::before {
+  content: "✓";
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  border-radius: 999px;
+  background: #28d98a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.homeButton {
+  position: fixed;
+  left: 50%;
+  bottom: 17px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: min(330px, calc(100% - 30px));
+  min-height: 55px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #79d8da 0%, #6dd0cf 100%);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 800;
+  box-shadow: 0 10px 20px rgba(104, 204, 203, 0.22);
+}
+
+.homeButton svg {
+  display: none;
+}

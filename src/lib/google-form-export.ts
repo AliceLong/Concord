@@ -194,7 +194,7 @@ function buildGoogleFormRow(elder: ElderlyProfile, report: GeneratedReport): unk
     cleanDraftValue(report.formDraft.auditoryAttentionSpotDifference),
     looksLikeCompletionReason(report.formDraft.cognitiveTrainingReason)
       ? cleanDraftValue(report.formDraft.cognitiveTrainingReason)
-      : "",
+      : cognitiveReason,
     hasMotionModuleChoice,
     "",
     "",
