@@ -119,21 +119,21 @@
 
 .keyboardButton,
 .nextButton {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   justify-self: center;
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: #ffffff;
+  background: transparent;
   color: #888170;
-  border: 3px solid #888170;
+  border: none;
 }
 
-.keyboardButton svg,
-.nextButton svg {
-  width: 23px;
-  height: 23px;
+.keyboardButton img,
+.nextButton img {
+  display: block;
+  object-fit: contain;
 }
 
 .recordButton {

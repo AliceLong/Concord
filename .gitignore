@@ -2,6 +2,7 @@
 __pycache__/
 *.py[codz]
 *$py.class
+.DS_Store
 
 # C extensions
 *.so
@@ -217,3 +218,6 @@ dist/
 
 # Document folders
 doc/
+
+# Figma reference screenshots
+public/assets/figma/

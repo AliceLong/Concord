@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2, ImagePlus, Send } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { serializeCareModuleIds, type CareModuleId } from "@/lib/care-modules";
 import { buildReportSessionStorageKey, readPersistedReportSession } from "@/lib/report-session-storage";
@@ -80,7 +80,7 @@ export function WhatsAppReportPage({ elder, taskId, selectedModules }: WhatsAppR
       <div className={styles.uploadBlock}>
         <h2>上传图片</h2>
         <label className={styles.uploadBox}>
-          <ImagePlus size={64} />
+          <Image src="/assets/images/image-gallery-placeholder.svg" alt="" width={64} height={64} />
           <input
             type="file"
             accept="image/*"
@@ -108,7 +108,6 @@ export function WhatsAppReportPage({ elder, taskId, selectedModules }: WhatsAppR
 
       <div className={styles.bottomActions}>
         <button className={styles.sendButton} type="button" onClick={handleOpenWhatsApp} disabled={!message.trim()}>
-          <Send size={18} />
           {hasOpenedWhatsApp ? "重新打开 WhatsApp" : "发送至 WhatsApp"}
         </button>
         <button
@@ -119,7 +118,12 @@ export function WhatsAppReportPage({ elder, taskId, selectedModules }: WhatsAppR
           aria-label={hasOpenedWhatsApp ? "我已发送" : "请先打开 WhatsApp"}
           title={hasOpenedWhatsApp ? "我已发送" : "请先打开 WhatsApp"}
         >
-          {hasOpenedWhatsApp ? <CheckCircle2 size={22} /> : <ArrowRight size={22} />}
+          <Image
+            src={hasOpenedWhatsApp ? "/assets/icons/icon-check.svg" : "/assets/icons/icon-arrow-circle-right.svg"}
+            alt=""
+            width={hasOpenedWhatsApp ? 24 : 44}
+            height={hasOpenedWhatsApp ? 24 : 44}
+          />
         </button>
       </div>
     </section>

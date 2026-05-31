@@ -1,6 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
-import { ChevronLeft, X } from "lucide-react";
 import { ReportSession } from "@/components/report-session";
 import { parseCareModuleIds, serializeCareModuleIds } from "@/lib/care-modules";
 import { getElderById } from "@/server/repositories/elder";
@@ -35,11 +35,11 @@ export default async function ReportPage({
             href={`/report/${id}/modules?modules=${serializeCareModuleIds(selectedModules)}${taskId ? `&taskId=${encodeURIComponent(taskId)}` : ""}`}
             className={styles.backButton}
           >
-            <ChevronLeft size={36} strokeWidth={2.4} />
+            <Image src="/assets/icons/icon-back.svg" alt="" width={32} height={32} />
           </Link>
           <h1 className={styles.title}>语音录入</h1>
           <Link href="/" className={styles.closeButton}>
-            <X size={36} strokeWidth={2.2} />
+            <Image src="/assets/icons/icon-close.svg" alt="" width={24} height={24} />
           </Link>
           <div className={styles.progress} aria-label="流程进度：第1步语音录入">
             <span className={`${styles.progressSegment} ${styles.progressSegmentActive}`} />

@@ -7,16 +7,16 @@
 }
 
 .honeycomb {
-  --hex-width: 99px;
-  --hex-height: 113px;
+  --hex-width: 104px;
+  --hex-height: 120px;
   display: grid;
-  width: 292px;
+  width: 306px;
   grid-template-columns: repeat(2, var(--hex-width));
   grid-auto-rows: var(--hex-height);
   justify-self: center;
   justify-content: start;
   align-content: start;
-  gap: 0 8px;
+  gap: 0 7px;
   padding-top: 4px;
 }
 
@@ -30,7 +30,7 @@
   width: var(--hex-width);
   height: var(--hex-height);
   border: 0;
-  clip-path: polygon(50% 0%, 94% 25%, 94% 75%, 50% 100%, 6% 75%, 6% 25%);
+  clip-path: polygon(50% 0%, 94% 24%, 94% 76%, 50% 100%, 6% 76%, 6% 24%);
   background: #fff0b8;
   color: #29271f;
   cursor: pointer;
@@ -94,13 +94,13 @@
 .hex:nth-child(3) {
   grid-column: 1;
   grid-row: 2;
-  transform: translateX(53px);
+  transform: translateX(56px);
 }
 
 .hex:nth-child(4) {
   grid-column: 2;
   grid-row: 2;
-  transform: translateX(53px);
+  transform: translateX(56px);
 }
 
 .hex:nth-child(5) {
@@ -116,13 +116,13 @@
 .hex:nth-child(7) {
   grid-column: 1;
   grid-row: 4;
-  transform: translateX(53px);
+  transform: translateX(56px);
 }
 
 .hex:nth-child(8) {
   grid-column: 2;
   grid-row: 4;
-  transform: translateX(53px);
+  transform: translateX(56px);
 }
 
 .hex:nth-child(9) {

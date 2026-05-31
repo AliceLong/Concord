@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { Calendar, Download, RefreshCcw, Send } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import { getCareModuleById, serializeCareModuleIds, type CareModuleId } from "@/lib/care-modules";
 import {
   buildReportSessionStorageKey,
@@ -210,26 +211,20 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
     );
   }
 
+  const displayOrderNo = /^(OR|CLT)-/i.test(patient.orderNo) ? patient.orderNo : `OR-${patient.orderNo}`;
+
   return (
     <section className={styles.wrapper}>
       <div className={styles.patientPanel}>
-        <div className={styles.avatar}>●</div>
+        <div className={styles.avatar}>
+          <Image src="/assets/images/elder-sunflower.svg" alt="" width={64} height={64} />
+        </div>
         <div className={styles.patientMain}>
-          <input
-            className={styles.nameInput}
-            value={patient.fullName}
-            onChange={(event) => updatePatient("fullName", event.target.value)}
-            aria-label="长者姓名"
-          />
-          <input
-            className={styles.orderInput}
-            value={patient.orderNo}
-            onChange={(event) => updatePatient("orderNo", event.target.value)}
-            aria-label="单号"
-          />
+          <h2 className={styles.nameText}>{patient.fullName}</h2>
+          <p className={styles.orderText}>{displayOrderNo}</p>
         </div>
         <label className={styles.dateField}>
-          <Calendar size={18} />
+          <Image src="/assets/icons/icon-calendar.svg" alt="" width={18} height={18} />
           <input
             type="date"
             value={report.sessionDate ?? new Date().toISOString().slice(0, 10)}
@@ -242,12 +237,11 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
         </label>
       </div>
 
-      <input
-        className={styles.tagsInput}
-        value={patient.statusTags.join("、")}
-        onChange={(event) => updatePatient("statusTags", event.target.value)}
-        aria-label="状态标签"
-      />
+      <div className={styles.tagsList} aria-label="状态标签">
+        {patient.statusTags.map((tag) => (
+          <span key={tag}>{tag}</span>
+        ))}
+      </div>
 
       <div className={styles.vitals}>
         <label>
@@ -272,7 +266,15 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
 
           return (
             <article key={careModule.id} className={ok ? styles.moduleCardOk : styles.moduleCardMissing}>
-              <h2>【{careModule.number}】{careModule.title}</h2>
+              <div className={styles.moduleHeader}>
+                <h2>【{careModule.number}】{careModule.title}</h2>
+                <Image
+                  src={ok ? "/assets/icons/icon-check.svg" : "/assets/icons/icon-alert.svg"}
+                  alt={ok ? "已完成" : "未识别"}
+                  width={24}
+                  height={24}
+                />
+              </div>
               <p>{careModule.prompt}</p>
               <textarea
                 value={text}
@@ -286,11 +288,11 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
 
       <div className={styles.floatingActions}>
         <button className={styles.primaryButton} onClick={handleExport} disabled={exportPending}>
-          {exportPending ? <RefreshCcw size={16} className={styles.spin} /> : <Download size={16} />}
+          {exportPending ? <RefreshCcw size={16} className={styles.spin} /> : null}
           上传至 Google Form
         </button>
         <Link className={styles.whatsappButton} href={whatsappHref}>
-          <Send size={16} />
+          <Image src="/assets/icons/icon-arrow-circle-right.svg" alt="" width={44} height={44} />
           WhatsApp 报告
         </Link>
       </div>

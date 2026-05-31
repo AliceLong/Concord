@@ -27,7 +27,7 @@
 
 .field {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 24px;
   gap: 7px;
   align-items: center;
 }
@@ -38,11 +38,13 @@
   line-height: 1.28;
 }
 
-.field svg {
-  display: none;
+.field img {
+  display: block;
+  object-fit: contain;
 }
 
 .field input {
+  grid-column: 1 / -1;
   width: 100%;
   height: 35px;
   padding: 0 13px;

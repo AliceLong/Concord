@@ -30,9 +30,10 @@
   cursor: pointer;
 }
 
-.uploadBox svg {
+.uploadBox img {
   width: 64px;
   height: 64px;
+  object-fit: contain;
 }
 
 .uploadBox input {
@@ -87,7 +88,7 @@
   width: min(100%, 390px);
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: 1fr 38px;
+  grid-template-columns: 1fr 44px;
   gap: 10px;
   padding: 0 15px;
   pointer-events: none;
@@ -121,17 +122,22 @@
   align-self: center;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border: 3px solid #888170;
+  width: 44px;
+  height: 44px;
+  border: none;
   border-radius: 999px;
-  background: #ffffff;
+  background: transparent;
   color: #888170;
 }
 
 .confirmButton {
-  border-color: #28d98a;
   color: #28d98a;
+}
+
+.nextButton img,
+.confirmButton img {
+  display: block;
+  object-fit: contain;
 }
 
 .sendButton svg {

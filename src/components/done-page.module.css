@@ -10,14 +10,10 @@
   background: #eefdff;
 }
 
-.wrapper > svg {
+.wrapper > img {
   width: 125px;
   height: 125px;
-  padding: 28px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #a2eee6 0%, #77d7d6 100%);
-  color: #ffffff;
-  stroke-width: 2.4;
+  object-fit: contain;
 }
 
 .wrapper h1 {
@@ -69,8 +65,4 @@
   line-height: 1;
   font-weight: 800;
   box-shadow: 0 10px 20px rgba(104, 204, 203, 0.22);
-}
-
-.homeButton svg {
-  display: none;
 }

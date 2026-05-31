@@ -19,20 +19,24 @@
   display: grid;
   align-items: center;
   justify-items: center;
-  min-height: 36px;
+  min-height: 72px;
 }
 
 .backButton {
   position: absolute;
   left: 0;
-  top: 50%;
+  top: 0;
   display: grid;
   place-items: center;
   width: 36px;
-  height: 36px;
-  transform: translateY(-50%);
+  height: 44px;
   color: #8a8577;
   text-decoration: none;
+}
+
+.backButton img {
+  display: block;
+  object-fit: contain;
 }
 
 .title {

@@ -1,6 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
 import { CareModulePicker } from "@/components/care-module-picker";
 import { parseCareModuleIds } from "@/lib/care-modules";
 import { getElderById, getOptionalModulesForElder, getRequiredModulesForElder } from "@/server/repositories/elder";
@@ -28,7 +28,7 @@ export default async function CareModulesPage({
       <section className={styles.shell}>
         <div className={styles.topBar}>
           <Link href="/" className={styles.backButton}>
-            <ChevronLeft size={36} strokeWidth={2.4} />
+            <Image src="/assets/icons/icon-back.svg" alt="" width={32} height={32} />
           </Link>
           <h1 className={styles.title}>活动选择</h1>
         </div>

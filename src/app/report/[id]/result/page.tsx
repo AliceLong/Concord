@@ -1,6 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
-import { ChevronLeft, X } from "lucide-react";
 import { ReportResultPage } from "@/components/report-result-page";
 import { parseCareModuleIds, serializeCareModuleIds } from "@/lib/care-modules";
 import { getElderById } from "@/server/repositories/elder";
@@ -35,7 +35,7 @@ export default async function ReportResultRoute({
             href={`/report/${id}/analysis?modules=${serializeCareModuleIds(selectedModules)}${taskId ? `&taskId=${encodeURIComponent(taskId)}` : ""}`}
             className={styles.backButton}
           >
-            <ChevronLeft size={18} />
+            <Image src="/assets/icons/icon-back.svg" alt="" width={32} height={32} />
           </Link>
           <div className={styles.headerMain}>
             <h1 className={styles.title}>报告详情</h1>
@@ -46,7 +46,7 @@ export default async function ReportResultRoute({
             </div>
           </div>
           <Link href="/" className={styles.closeButton} aria-label="关闭">
-            <X size={24} />
+            <Image src="/assets/icons/icon-close.svg" alt="" width={24} height={24} />
           </Link>
         </div>
 

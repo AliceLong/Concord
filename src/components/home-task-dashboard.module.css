@@ -34,13 +34,16 @@
 
 .day,
 .dayActive {
+  border: none;
   display: grid;
   place-items: center;
   gap: 7px;
   min-width: 0;
   min-height: 66px;
-  border-radius: 14px;
+  border-radius: 16px;
+  background: transparent;
   color: #7f7869;
+  cursor: pointer;
 }
 
 .day small,
@@ -105,7 +108,7 @@
   gap: 12px;
   min-height: 96px;
   padding: 0 11px 0 0;
-  border-radius: 16px;
+  border-radius: 12px;
 }
 
 .taskCard > svg {
@@ -119,7 +122,7 @@
   place-items: center;
   flex-shrink: 0;
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #d9ebd0;
   color: transparent;
 }
@@ -134,39 +137,12 @@
   height: 64px;
 }
 
-.avatar svg,
-.miniAvatar svg {
-  display: none;
-}
-
-.avatar::before,
-.miniAvatar::before {
-  content: "";
-  position: absolute;
-  left: 28%;
-  top: 14%;
-  width: 48%;
-  height: 49%;
-  background: #ffc526;
-  clip-path: polygon(49% 0%, 96% 27%, 81% 82%, 25% 92%, 0 38%);
-  transform: rotate(-18deg);
-}
-
-.avatar::after,
-.miniAvatar::after {
-  content: "";
-  position: absolute;
-  left: 42%;
-  top: 41%;
-  width: 24%;
-  height: 24%;
-  border-radius: 999px;
-  background: #bc7900;
-  box-shadow: -31px 21px 0 -5px #96ad51, -10px 27px 0 -5px #96ad51;
-}
-
-.miniAvatar::after {
-  box-shadow: -21px 15px 0 -4px #96ad51, -7px 19px 0 -4px #96ad51;
+.avatar img,
+.miniAvatar img {
+  display: block;
+  width: 74%;
+  height: 74%;
+  object-fit: contain;
 }
 
 .taskMain {
@@ -211,7 +187,7 @@
   gap: 12px;
   min-height: 76px;
   padding: 8px;
-  border-radius: 9px;
+  border-radius: 12px;
 }
 
 .miniMain {

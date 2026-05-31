@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Keyboard, Mic, Square } from "lucide-react";
+import { Mic, Square } from "lucide-react";
 import { useSpeechmaticsRecorder } from "@/hooks/use-speechmatics-recorder";
 import { getCareModulesByIds, serializeCareModuleIds, type CareModuleId } from "@/lib/care-modules";
 import {
@@ -146,7 +147,7 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
           onClick={() => textareaRef.current?.focus()}
           aria-label="手动输入"
         >
-          <Keyboard size={28} />
+          <Image src="/assets/icons/icon-keyboard.svg" alt="" width={44} height={44} />
         </button>
 
         <button
@@ -166,7 +167,7 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
           disabled={recorder.isRecording || recorder.isPending || !draft.trim()}
           aria-label="下一步分析"
         >
-          <ArrowRight size={32} />
+          <Image src="/assets/icons/icon-arrow-circle-right.svg" alt="" width={44} height={44} />
         </button>
       </div>
     </section>

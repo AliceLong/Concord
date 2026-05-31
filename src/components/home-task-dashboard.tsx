@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Box, ClipboardCheck, UserRound } from "lucide-react";
 import type { DemoCareTask } from "@/lib/demo-data";
@@ -43,6 +44,11 @@ function completionKey(taskId: string): string {
 
 export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
+  const [selectedDateIndex, setSelectedDateIndex] = useState(3);
+  const weekDays = useMemo(
+    () => ["五", "六", "日", "一", "二", "三", "四"].map((day, index) => ({ day, date: 18 + index })),
+    []
+  );
 
   useEffect(() => {
     const completed = tasks
@@ -76,11 +82,18 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
         <div>
           <p className={styles.greeting}>早晨，Doris!</p>
           <div className={styles.weekRow} aria-label="本周日期">
-            {["五", "六", "日", "一", "二", "三", "四"].map((day, index) => (
-              <span key={day} className={index === 3 ? styles.dayActive : styles.day}>
+            {weekDays.map(({ day, date }, index) => (
+              <button
+                key={`${day}-${date}`}
+                type="button"
+                className={index === selectedDateIndex ? styles.dayActive : styles.day}
+                onClick={() => setSelectedDateIndex(index)}
+                aria-pressed={index === selectedDateIndex}
+                aria-label={`选择 ${date} 日，星期${day}`}
+              >
                 <small>{day}</small>
-                <strong>{18 + index}</strong>
-              </span>
+                <strong>{date}</strong>
+              </button>
             ))}
           </div>
         </div>
@@ -97,7 +110,7 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
             todayTasks.map(({ task, elder }) => (
               <Link key={task.id} className={styles.taskCard} href={`/report/${elder.id}/modules?taskId=${task.id}`}>
                 <div className={styles.avatar}>
-                  <Box size={34} />
+                  <Image src="/assets/images/elder-sunflower.svg" alt="" width={76} height={76} />
                 </div>
                 <div className={styles.taskMain}>
                   <div className={styles.taskTop}>
@@ -124,7 +137,7 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
           {unfinishedTasks.map(({ task, elder, status }) => (
             <Link key={task.id} className={styles.miniCard} href={`/report/${elder.id}/modules?taskId=${task.id}`}>
               <div className={styles.miniAvatar}>
-                <Box size={24} />
+                <Image src="/assets/images/elder-sunflower.svg" alt="" width={64} height={64} />
               </div>
               <div className={styles.miniMain}>
                 <strong>{elder.fullName}</strong>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowRight, CheckCircle2, Mic, RefreshCcw, Square } from "lucide-react";
+import { Mic, RefreshCcw, Square } from "lucide-react";
 import { useSpeechmaticsRecorder } from "@/hooks/use-speechmatics-recorder";
 import { buildCombinedTranscriptFromResults } from "@/lib/report-analysis";
 import { getCareModuleById, serializeCareModuleIds, type CareModuleId } from "@/lib/care-modules";
@@ -54,6 +55,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
   const [finalizePending, setFinalizePending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const activeModuleRef = useRef<CareModuleId | null>(null);
+  const activeTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const recordingBaseTextRef = useRef("");
 
   const recorder = useSpeechmaticsRecorder({
@@ -329,10 +331,17 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
                   <p>{careModule.prompt}</p>
                   {!result.recognized && result.missingReason ? <span>{result.missingReason}</span> : null}
                 </div>
-                {result.recognized ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
+                <Image
+                  className={styles.statusIcon}
+                  src={result.recognized ? "/assets/icons/icon-check.svg" : "/assets/icons/icon-alert.svg"}
+                  alt={result.recognized ? "已完成" : "未识别"}
+                  width={24}
+                  height={24}
+                />
               </div>
               {active ? (
                 <textarea
+                  ref={activeTextareaRef}
                   value={value}
                   onClick={(event) => event.stopPropagation()}
                   onChange={(event) => updateResult(result.moduleId, event.target.value)}
@@ -350,6 +359,16 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
       {recorder.latencyLabel ? <div className={styles.latency}>{recorder.latencyLabel}</div> : null}
 
       <div className={styles.bottomBar}>
+        <button
+          className={styles.keyboardButton}
+          type="button"
+          onClick={() => activeTextareaRef.current?.focus()}
+          disabled={!activeModuleId || analysisPending}
+          aria-label="手动输入"
+        >
+          <Image src="/assets/icons/icon-keyboard.svg" alt="" width={44} height={44} />
+        </button>
+
         <button
           className={activeModuleId ? styles.recordButtonActive : styles.recordButtonDisabled}
           type="button"
@@ -372,7 +391,11 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
           onClick={handleNext}
           disabled={analysisPending || finalizePending || recorder.isRecording || recorder.isPending || results.length === 0}
         >
-          {finalizePending ? <RefreshCcw size={16} className={styles.spin} /> : <ArrowRight size={16} />}
+          {finalizePending ? (
+            <RefreshCcw size={16} className={styles.spin} />
+          ) : (
+            <Image src="/assets/icons/icon-arrow-circle-right.svg" alt="" width={44} height={44} />
+          )}
           {selectedModules.includes("fall_prevention_exercise") ? "下一步：运动次数" : "确认并生成报告"}
         </button>
       </div>

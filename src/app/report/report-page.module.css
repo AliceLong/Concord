@@ -31,6 +31,12 @@
   text-decoration: none;
 }
 
+.backButton img,
+.closeButton img {
+  display: block;
+  object-fit: contain;
+}
+
 .headerMain {
   display: grid;
   justify-items: center;

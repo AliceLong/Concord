@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, RefreshCcw } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import { serializeCareModuleIds, type CareModuleId } from "@/lib/care-modules";
 import {
   buildReportSessionStorageKey,
@@ -126,7 +127,7 @@ export function ExercisePage({ elder, taskId, selectedModules }: ExercisePagePro
         {exerciseFields.map((field) => (
           <label key={field.key} className={styles.field}>
             <span>{field.label}</span>
-            <CheckCircle2 size={22} />
+            <Image src="/assets/icons/icon-check.svg" alt="已完成" width={24} height={24} />
             <input
               value={exercise[field.key]}
               onChange={(event) => updateField(field.key, event.target.value)}

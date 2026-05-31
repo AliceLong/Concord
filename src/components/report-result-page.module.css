@@ -23,28 +23,11 @@
   color: transparent;
 }
 
-.avatar::before {
-  content: "";
-  position: absolute;
-  left: 28%;
-  top: 14%;
-  width: 48%;
-  height: 49%;
-  background: #ffc526;
-  clip-path: polygon(49% 0%, 96% 27%, 81% 82%, 25% 92%, 0 38%);
-  transform: rotate(-18deg);
-}
-
-.avatar::after {
-  content: "";
-  position: absolute;
-  left: 42%;
-  top: 41%;
-  width: 24%;
-  height: 24%;
-  border-radius: 999px;
-  background: #bc7900;
-  box-shadow: -15px 11px 0 -3px #96ad51, -5px 14px 0 -3px #96ad51;
+.avatar img {
+  display: block;
+  width: 75%;
+  height: 75%;
+  object-fit: contain;
 }
 
 .patientMain {
@@ -52,9 +35,6 @@
   gap: 2px;
 }
 
-.nameInput,
-.orderInput,
-.tagsInput,
 .dateField input,
 .vitals input {
   border: none;
@@ -62,17 +42,19 @@
   color: #272d24;
 }
 
-.nameInput {
-  width: 100%;
+.nameText {
+  margin: 0;
   font-size: 17px;
   line-height: 1.12;
   font-weight: 800;
+  color: #272d24;
 }
 
-.orderInput {
-  width: 100%;
+.orderText {
+  margin: 0;
   color: #736f62;
   font-size: 13px;
+  line-height: 1.2;
 }
 
 .dateField {
@@ -86,9 +68,11 @@
   color: #6c6b5f;
 }
 
-.dateField svg {
+.dateField img {
+  display: block;
   width: 15px;
   height: 15px;
+  object-fit: contain;
 }
 
 .dateField input {
@@ -97,11 +81,22 @@
   font-size: 13px;
 }
 
-.tagsInput {
-  width: 100%;
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.tagsList span {
+  display: inline-flex;
+  align-items: center;
   min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #fff1b7;
   color: #6c5b13;
   font-size: 12px;
+  line-height: 1;
 }
 
 .vitals {
@@ -154,13 +149,26 @@
   border-color: rgba(146, 61, 50, 0.14);
 }
 
-.moduleCardOk h2,
-.moduleCardMissing h2 {
+.moduleHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.moduleHeader h2 {
   margin: 0;
   color: #232820;
   font-size: 17px;
   line-height: 1.16;
   font-weight: 800;
+}
+
+.moduleHeader img {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .moduleCardOk p,
@@ -194,7 +202,7 @@
   width: min(100%, 390px);
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: 1fr 42px;
+  grid-template-columns: 1fr 44px;
   gap: 10px;
   padding: 0 16px;
   pointer-events: none;
@@ -225,20 +233,20 @@
 }
 
 .whatsappButton {
-  width: 42px;
-  min-height: 42px;
+  width: 44px;
+  min-height: 44px;
   align-self: center;
   padding: 0;
-  border: 3px solid #888170;
-  background: #ffffff;
+  border: none;
+  background: transparent;
   color: #888170;
   font-size: 0;
   box-shadow: none;
 }
 
-.whatsappButton svg {
-  width: 22px;
-  height: 22px;
+.whatsappButton img {
+  display: block;
+  object-fit: contain;
 }
 
 .actionButton {

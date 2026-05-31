@@ -35,6 +35,12 @@
   text-decoration: none;
 }
 
+.backButton img,
+.closeButton img {
+  display: block;
+  object-fit: contain;
+}
+
 .backButton {
   left: 16px;
 }
