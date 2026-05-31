@@ -209,6 +209,19 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
     void recorder.startRecording();
   }
 
+  function handleToggleModuleRecording() {
+    if (recorder.isRecording) {
+      recorder.stopRecording();
+      return;
+    }
+
+    if (recorder.isStarting || recorder.isPending) {
+      return;
+    }
+
+    handleStartModuleRecording();
+  }
+
   async function finalizeAndGoToResult(nextResults: ModuleRecognitionResult[]) {
     setFinalizePending(true);
     setError(null);
@@ -273,10 +286,12 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
   const recordLabel = !activeModuleId
     ? "请选择模块"
     : recorder.isRecording
-      ? "录音中"
-      : activeResult?.recognized
-        ? "按住追加"
-        : "按住补充";
+      ? "停止录音"
+      : recorder.isStarting
+        ? "启动中..."
+        : recorder.isPending
+        ? "整理中..."
+        : "开始录音";
 
   return (
     <section className={styles.wrapper}>
@@ -335,30 +350,21 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
       {recorder.latencyLabel ? <div className={styles.latency}>{recorder.latencyLabel}</div> : null}
 
       <div className={styles.bottomBar}>
-        {!recorder.isRecording ? (
-          <button
-            className={activeModuleId ? styles.recordButtonActive : styles.recordButtonDisabled}
-            type="button"
-            onMouseDown={handleStartModuleRecording}
-            onMouseUp={recorder.stopRecording}
-            onMouseLeave={() => {
-              if (recorder.isRecording) {
-                recorder.stopRecording();
-              }
-            }}
-            onTouchStart={handleStartModuleRecording}
-            onTouchEnd={recorder.stopRecording}
-            disabled={!activeModuleId || !recorder.isSupported || analysisPending}
-          >
-            <Mic size={16} />
-            {recordLabel}
-          </button>
-        ) : (
-          <button className={styles.recordButtonActive} type="button" onClick={recorder.stopRecording}>
-            <Square size={16} />
-            停止录音
-          </button>
-        )}
+        <button
+          className={activeModuleId ? styles.recordButtonActive : styles.recordButtonDisabled}
+          type="button"
+          onClick={handleToggleModuleRecording}
+          disabled={
+            !activeModuleId ||
+            !recorder.isSupported ||
+            analysisPending ||
+            recorder.isStarting ||
+            (recorder.isPending && !recorder.isRecording)
+          }
+        >
+          {recorder.isRecording ? <Square size={16} /> : <Mic size={16} />}
+          {recordLabel}
+        </button>
 
         <button
           className={styles.nextButton}

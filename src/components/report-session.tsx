@@ -23,7 +23,6 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const storageReadyRef = useRef(false);
-  const [hasRecording, setHasRecording] = useState(false);
   const [draft, setDraft] = useState("");
   const [sessionDate, setSessionDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +31,6 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
   const recorder = useSpeechmaticsRecorder({
     onTranscript: (transcript) => {
       setDraft(transcript);
-      setHasRecording(Boolean(transcript.trim()));
     },
     onError: setError
   });
@@ -43,7 +41,6 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
     if (persisted) {
       setDraft(persisted.draft);
       setSessionDate(persisted.sessionDate || new Date().toISOString().slice(0, 10));
-      setHasRecording(Boolean(persisted.draft.trim()));
     }
 
     storageReadyRef.current = true;
@@ -69,15 +66,22 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
     });
   }, [draft, selectedModules, sessionDate, storageKey]);
 
-  useEffect(() => {
-    if (!recorder.isRecording && !recorder.isPending) {
-      setHasRecording(Boolean(draft.trim()));
-    }
-  }, [draft, recorder.isPending, recorder.isRecording]);
-
   function handleStartRecording() {
     setError(null);
     void recorder.startRecording();
+  }
+
+  function handleToggleRecording() {
+    if (recorder.isRecording) {
+      recorder.stopRecording();
+      return;
+    }
+
+    if (recorder.isStarting || recorder.isPending) {
+      return;
+    }
+
+    handleStartRecording();
   }
 
   function handleNext() {
@@ -102,12 +106,12 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
   }
 
   const statusLabel = recorder.isRecording
-    ? "录音中"
-    : recorder.isPending
-      ? "整理中"
-      : hasRecording
-        ? "准备生成"
-        : "准备录音";
+    ? "停止录音"
+    : recorder.isStarting
+      ? "启动中..."
+      : recorder.isPending
+      ? "整理中..."
+      : "开始录音";
 
   return (
     <section className={styles.wrapper}>
@@ -129,7 +133,7 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
           onChange={(event) => {
             setDraft(event.target.value);
           }}
-          placeholder="按住说话后，识别文字会显示在这里，也可以手动输入。"
+          placeholder="点击开始录音后，识别文字会显示在这里，也可以手动输入。"
         />
         {error ? <div className={styles.error}>{error}</div> : null}
         {recorder.latencyLabel ? <div className={styles.latency}>{recorder.latencyLabel}</div> : null}
@@ -145,30 +149,16 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
           <Keyboard size={28} />
         </button>
 
-        {!recorder.isRecording ? (
-          <button
-            className={styles.recordButton}
-            onMouseDown={handleStartRecording}
-            onMouseUp={recorder.stopRecording}
-            onMouseLeave={() => {
-              if (recorder.isRecording) {
-                recorder.stopRecording();
-              }
-            }}
-            onTouchStart={handleStartRecording}
-            onTouchEnd={recorder.stopRecording}
-            disabled={!recorder.isSupported}
-            aria-label={statusLabel}
-          >
-            <Mic size={24} />
-            按住说话
-          </button>
-        ) : (
-          <button className={styles.recordButton} onClick={recorder.stopRecording}>
-            <Square size={22} />
-            停止录音
-          </button>
-        )}
+        <button
+          className={styles.recordButton}
+          type="button"
+          onClick={handleToggleRecording}
+          disabled={!recorder.isSupported || recorder.isStarting || (recorder.isPending && !recorder.isRecording)}
+          aria-label={statusLabel}
+        >
+          {recorder.isRecording ? <Square size={22} /> : <Mic size={24} />}
+          {statusLabel}
+        </button>
 
         <button
           className={styles.nextButton}

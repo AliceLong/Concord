@@ -57,6 +57,7 @@ export function useSpeechmaticsRecorder({
   const onErrorRef = useRef(onError);
 
   const [isSupported, setIsSupported] = useState(true);
+  const [isStarting, setIsStarting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [latencyLabel, setLatencyLabel] = useState<string | null>(null);
@@ -230,6 +231,12 @@ export function useSpeechmaticsRecorder({
   }
 
   async function startRecording() {
+    if (isStarting || isRecording || isPending) {
+      return;
+    }
+
+    setIsStarting(true);
+
     if (
       !isSupported ||
       typeof navigator === "undefined" ||
@@ -237,6 +244,7 @@ export function useSpeechmaticsRecorder({
       typeof AudioWorkletNode === "undefined"
     ) {
       setIsSupported(false);
+      setIsStarting(false);
       onErrorRef.current?.("当前浏览器不支持低延迟录音，请改用最新版 Chrome。");
       return;
     }
@@ -301,10 +309,12 @@ export function useSpeechmaticsRecorder({
 
       setIsPending(true);
       setIsRecording(true);
+      setIsStarting(false);
     } catch (currentError) {
       stream?.getTracks().forEach((track) => track.stop());
       teardownAudioPipeline();
       closeSpeechmaticsClient();
+      setIsStarting(false);
       setIsPending(false);
       setIsRecording(false);
       onErrorRef.current?.(currentError instanceof Error ? currentError.message : "录音启动失败");
@@ -314,6 +324,7 @@ export function useSpeechmaticsRecorder({
   function stopRecording() {
     if (!speechmaticsClientRef.current) {
       teardownAudioPipeline();
+      setIsStarting(false);
       setIsRecording(false);
       setIsPending(false);
       return;
@@ -326,6 +337,7 @@ export function useSpeechmaticsRecorder({
       closeSpeechmaticsClient();
     });
     teardownAudioPipeline();
+    setIsStarting(false);
     setIsRecording(false);
   }
 
@@ -342,6 +354,7 @@ export function useSpeechmaticsRecorder({
     partialTranscriptRef.current = "";
     recordingStartedAtRef.current = null;
     firstTranscriptAtRef.current = null;
+    setIsStarting(false);
     setIsRecording(false);
     setIsPending(false);
     setLatencyLabel(null);
@@ -349,6 +362,7 @@ export function useSpeechmaticsRecorder({
 
   return {
     isSupported,
+    isStarting,
     isRecording,
     isPending,
     latencyLabel,
