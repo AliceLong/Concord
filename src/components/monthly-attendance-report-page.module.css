@@ -1,0 +1,169 @@
+.page {
+  width: min(100%, 390px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 38px 16px 88px;
+  background: #fff7df;
+}
+
+.topBar {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  min-height: 44px;
+}
+
+.topBar a {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+}
+
+.topBar img {
+  display: block;
+  object-fit: contain;
+}
+
+.topBar h1 {
+  margin: 0;
+  color: #1d1d17;
+  font-size: 22px;
+  line-height: 1.15;
+  font-weight: 800;
+  text-align: center;
+}
+
+.reportCard {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(55, 49, 28, 0.08);
+}
+
+.reportCard h2 {
+  margin: 0;
+  color: #2b2921;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.reportCard p {
+  margin: 8px 0 14px;
+  color: #746d5e;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.placeholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 360px;
+  border-radius: 12px;
+  background: #d9d9d9;
+  overflow: hidden;
+}
+
+.placeholder img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+.placeholder .beeFlight {
+  position: absolute;
+  right: -16px;
+  top: 8px;
+  width: 152px;
+  height: auto;
+  opacity: 0.9;
+}
+
+.sendButton {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 20;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(330px, calc(100% - 30px));
+  min-height: 55px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #79d8da 0%, #6dd0cf 100%);
+  color: #ffffff;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 800;
+  box-shadow: 0 10px 20px rgba(104, 204, 203, 0.22);
+  cursor: pointer;
+}
+
+.shareHint {
+  margin: 12px 0 0;
+  color: #6f6859;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.successPage {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  width: min(100%, 390px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 0 30px 94px;
+  text-align: center;
+  background: #eefdff;
+}
+
+.successGif {
+  display: block;
+  width: 256px;
+  height: 384px;
+  margin-bottom: -26px;
+  object-fit: contain;
+}
+
+.successPage h1 {
+  margin: 0;
+  color: #3a362d;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.successPage p {
+  margin: 2px 0 0;
+  color: #8a8575;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.homeButton {
+  position: fixed;
+  left: 50%;
+  bottom: 66px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(330px, calc(100% - 30px));
+  min-height: 55px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #79d8da 0%, #9de4df 100%);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 800;
+  box-shadow: 0 10px 20px rgba(104, 204, 203, 0.22);
+}

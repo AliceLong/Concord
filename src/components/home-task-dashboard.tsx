@@ -44,6 +44,7 @@ function completionKey(taskId: string): string {
 
 export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
+  const [showFirstAchievement, setShowFirstAchievement] = useState(false);
   const [selectedDateIndex, setSelectedDateIndex] = useState(3);
   const weekDays = useMemo(
     () => ["五", "六", "日", "一", "二", "三", "四"].map((day, index) => ({ day, date: 18 + index })),
@@ -56,7 +57,17 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
       .map((task) => task.id);
 
     setCompletedTaskIds(completed);
+
+    setShowFirstAchievement(
+      window.localStorage.getItem("achievement:first-report-completed") === "1" &&
+        window.localStorage.getItem("achievement:first-report-seen") !== "1"
+    );
   }, [tasks]);
+
+  function handleCloseAchievement() {
+    window.localStorage.setItem("achievement:first-report-seen", "1");
+    setShowFirstAchievement(false);
+  }
 
   const taskItems = useMemo(
     () =>
@@ -152,19 +163,48 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
         </div>
       </section>
 
+      {showFirstAchievement ? (
+        <div className={styles.achievementOverlay} role="dialog" aria-modal="true" aria-labelledby="first-achievement-title">
+          <div className={styles.achievementDialog}>
+            <div className={styles.speechWrap}>
+              <Image className={styles.speechBubble} src="/assets/images/speech-bubble.svg" alt="" width={240} height={137} />
+              <p id="first-achievement-title">恭喜你完成第一次记录任务!</p>
+            </div>
+
+            <div className={styles.gifWrap}>
+              <Image
+                className={styles.achievementGif}
+                src="/assets/gif/award_once.gif"
+                alt=""
+                width={266}
+                height={276}
+                unoptimized
+              />
+            </div>
+
+            <div className={styles.achievementCard}>
+              <p className={styles.achievementText}>可以去我的查看勋章获得情况哦</p>
+              <button type="button" onClick={handleCloseAchievement}>
+                知道啦
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <nav className={styles.bottomNav} aria-label="主导航">
-        <span className={styles.navActive}>
+        <Link className={styles.navActive} href="/">
           <Box size={20} />
           首页
-        </span>
-        <span>
+        </Link>
+        <Link href="/attendance-reports">
           <ClipboardCheck size={20} />
           报告
-        </span>
-        <span>
+        </Link>
+        <Link href="/profile">
           <UserRound size={20} />
           我的
-        </span>
+        </Link>
       </nav>
     </section>
   );

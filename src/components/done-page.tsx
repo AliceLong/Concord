@@ -14,6 +14,9 @@ export function DonePage({ taskId }: DonePageProps) {
     if (taskId) {
       window.localStorage.setItem(`care-task-completed:${taskId}`, "1");
     }
+
+    window.localStorage.setItem("achievement:first-report-completed", "1");
+    window.localStorage.setItem("achievement:first-report-seen", "0");
   }, [taskId]);
 
   return (
