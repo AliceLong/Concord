@@ -184,9 +184,11 @@
   text-decoration: none;
 }
 
-.bottomNav svg {
+.navIcon {
+  display: block;
   width: 24px;
   height: 24px;
+  object-fit: contain;
 }
 
 .navActive {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Box, ClipboardCheck, UserRound } from "lucide-react";
+import { ArrowRight, ClipboardCheck, UserRound } from "lucide-react";
 import type { DemoCareTask } from "@/lib/demo-data";
 import type { ElderlyProfile } from "@/types/elderly";
 import styles from "@/components/home-task-dashboard.module.css";
@@ -11,6 +11,14 @@ import styles from "@/components/home-task-dashboard.module.css";
 interface HomeTaskDashboardProps {
   tasks: DemoCareTask[];
   elders: ElderlyProfile[];
+}
+
+type TaskStatus = ReturnType<typeof formatOverdueLabel>;
+
+interface TaskItem {
+  task: DemoCareTask;
+  elder: ElderlyProfile;
+  status: TaskStatus;
 }
 
 function formatTime(value: string): string {
@@ -42,6 +50,24 @@ function completionKey(taskId: string): string {
   return `care-task-completed:${taskId}`;
 }
 
+const elderAvatarSrcByKey: Record<string, string> = {
+  sunflower: "/assets/profile/向日葵 icon.svg",
+  daisy: "/assets/profile/小雏菊 icon.svg",
+  sakura: "/assets/profile/樱花 icon.svg",
+  peony: "/assets/profile/牡丹 icon.svg",
+  lavender: "/assets/profile/薰衣草 icon.svg",
+  tulip: "/assets/profile/郁金香 icon.svg",
+  calla: "/assets/profile/马蹄莲 icon.svg"
+};
+
+function getElderAvatarSrc(elder: ElderlyProfile): string {
+  if (!elder.avatar) {
+    return elderAvatarSrcByKey.sunflower;
+  }
+
+  return elderAvatarSrcByKey[elder.avatar] ?? elder.avatar;
+}
+
 export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const [showFirstAchievement, setShowFirstAchievement] = useState(false);
@@ -69,23 +95,22 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
     setShowFirstAchievement(false);
   }
 
-  const taskItems = useMemo(
+  const taskItems = useMemo<TaskItem[]>(
     () =>
       tasks
-        .filter((task) => !completedTaskIds.includes(task.id))
         .map((task) => ({
           task,
           elder: elders.find((item) => item.id === task.elderId) ?? null,
           status: formatOverdueLabel(task.dueAt)
         }))
-        .filter((item): item is { task: DemoCareTask; elder: ElderlyProfile; status: ReturnType<typeof formatOverdueLabel> } =>
-          Boolean(item.elder)
-        ),
-    [completedTaskIds, elders, tasks]
+        .filter((item): item is TaskItem => Boolean(item.elder)),
+    [elders, tasks]
   );
 
-  const todayTasks = taskItems.filter((item) => item.status.tone === "normal");
-  const unfinishedTasks = taskItems.filter((item) => item.status.tone !== "normal");
+  const activeTasks = taskItems.filter((item) => !completedTaskIds.includes(item.task.id));
+  const todayTasks = activeTasks.filter((item) => item.status.tone === "normal");
+  const unfinishedTasks = activeTasks.filter((item) => item.status.tone !== "normal");
+  const completedTasks = taskItems.filter((item) => completedTaskIds.includes(item.task.id));
 
   return (
     <section className={styles.dashboard}>
@@ -110,7 +135,7 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
         </div>
         <span className={styles.summaryBadge}>
           <ClipboardCheck size={16} />
-          {taskItems.length} 项待处理
+          {activeTasks.length} 项待处理
         </span>
       </header>
 
@@ -121,7 +146,7 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
             todayTasks.map(({ task, elder }) => (
               <Link key={task.id} className={styles.taskCard} href={`/report/${elder.id}/modules?taskId=${task.id}`}>
                 <div className={styles.avatar}>
-                  <Image src="/assets/images/elder-sunflower.svg" alt="" width={76} height={76} />
+                  <Image src={getElderAvatarSrc(elder)} alt="" width={76} height={76} />
                 </div>
                 <div className={styles.taskMain}>
                   <div className={styles.taskTop}>
@@ -142,13 +167,33 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
         </div>
       </section>
 
+      {completedTasks.length ? (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>已完成</h2>
+          <div className={styles.secondaryList}>
+            {completedTasks.map(({ task, elder }) => (
+              <Link key={task.id} className={styles.miniCard} href={`/report/${elder.id}/modules?taskId=${task.id}`}>
+                <div className={styles.miniAvatar}>
+                  <Image src={getElderAvatarSrc(elder)} alt="" width={64} height={64} />
+                </div>
+                <div className={styles.miniMain}>
+                  <strong>{elder.fullName}</strong>
+                  <span>{formatTime(task.scheduledAt)}</span>
+                </div>
+                <span className={styles.completedPill}>已完成</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>未完成事项</h2>
         <div className={styles.secondaryList}>
           {unfinishedTasks.map(({ task, elder, status }) => (
             <Link key={task.id} className={styles.miniCard} href={`/report/${elder.id}/modules?taskId=${task.id}`}>
               <div className={styles.miniAvatar}>
-                <Image src="/assets/images/elder-sunflower.svg" alt="" width={64} height={64} />
+                <Image src={getElderAvatarSrc(elder)} alt="" width={64} height={64} />
               </div>
               <div className={styles.miniMain}>
                 <strong>{elder.fullName}</strong>
@@ -194,15 +239,15 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
 
       <nav className={styles.bottomNav} aria-label="主导航">
         <Link className={styles.navActive} href="/">
-          <Box size={20} />
+          <Image className={styles.navIcon} src="/assets/icons/home_selected.svg" alt="" width={24} height={24} />
           首页
         </Link>
         <Link href="/attendance-reports">
-          <ClipboardCheck size={20} />
+          <Image className={styles.navIcon} src="/assets/icons/report.svg" alt="" width={24} height={24} />
           报告
         </Link>
         <Link href="/profile">
-          <UserRound size={20} />
+          <Image className={styles.navIcon} src="/assets/icons/me.svg" alt="" width={24} height={24} />
           我的
         </Link>
       </nav>

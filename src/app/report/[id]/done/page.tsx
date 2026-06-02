@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { DonePage } from "@/components/done-page";
-import { getElderById } from "@/server/repositories/elder";
+import { getElderById, listCareTasks } from "@/server/repositories/elder";
 import styles from "@/app/report/report-page.module.css";
 
 export default async function DoneRoute({
@@ -13,6 +13,7 @@ export default async function DoneRoute({
   const { id } = await params;
   const { taskId } = await searchParams;
   const elder = getElderById(id);
+  const fallbackTaskId = listCareTasks().find((task) => task.elderId === id)?.id;
 
   if (!elder) {
     notFound();
@@ -21,7 +22,7 @@ export default async function DoneRoute({
   return (
     <main className={styles.page}>
       <section className={styles.shell}>
-        <DonePage taskId={taskId} />
+        <DonePage taskId={taskId ?? fallbackTaskId} />
       </section>
     </main>
   );

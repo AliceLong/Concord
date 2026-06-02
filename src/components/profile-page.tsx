@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Box, ClipboardCheck, UserRound } from "lucide-react";
 import styles from "@/components/profile-page.module.css";
 
 export function ProfilePage() {
@@ -40,15 +39,15 @@ export function ProfilePage() {
 
       <nav className={styles.bottomNav} aria-label="主导航">
         <Link href="/">
-          <Box size={20} />
+          <Image className={styles.navIcon} src="/assets/icons/home.svg" alt="" width={24} height={24} />
           首页
         </Link>
         <Link href="/attendance-reports">
-          <ClipboardCheck size={20} />
+          <Image className={styles.navIcon} src="/assets/icons/report.svg" alt="" width={24} height={24} />
           报告
         </Link>
         <Link className={styles.navActive} href="/profile">
-          <UserRound size={20} />
+          <Image className={styles.navIcon} src="/assets/icons/me_selected.svg" alt="" width={24} height={24} />
           我的
         </Link>
       </nav>

@@ -208,7 +208,8 @@
 }
 
 .overduePill,
-.soonPill {
+.soonPill,
+.completedPill {
   align-self: start;
   display: inline-flex;
   align-items: center;
@@ -228,6 +229,11 @@
 .soonPill {
   background: #fff29d;
   color: #7a6613;
+}
+
+.completedPill {
+  background: #d8f5e4;
+  color: #237751;
 }
 
 .emptyCard {
@@ -262,10 +268,11 @@
   text-decoration: none;
 }
 
-.bottomNav svg {
+.navIcon {
+  display: block;
   width: 24px;
   height: 24px;
-  color: currentColor;
+  object-fit: contain;
 }
 
 .navActive {

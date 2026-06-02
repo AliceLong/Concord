@@ -30,7 +30,7 @@ export const demoElders: ElderlyProfile[] = [
     riskLevel: "high",
     medicalNotes: "夜间血氧需要重点观察。",
     tips: "记录呼吸情况、服药依从性，以及是否出现疲倦或咳嗽。",
-    avatar: "sunflower",
+    avatar: "daisy",
     statusTags: ["血氧观察", "容易疲倦", "服药提醒"],
     vitals: {
       bloodPressure: "142/78",
@@ -48,7 +48,7 @@ export const demoElders: ElderlyProfile[] = [
     riskLevel: "low",
     medicalNotes: "糖尿病饮食控制中。",
     tips: "优先记录运动配合度、食欲和情绪波动。",
-    avatar: "sunflower",
+    avatar: "sakura",
     statusTags: ["饮食控制", "运动观察", "情绪平稳"],
     vitals: {
       bloodPressure: "128/76",
