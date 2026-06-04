@@ -27,13 +27,13 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
 
   if (!text) {
-    throw new Error("服务端返回了空响应。");
+    throw new Error("服務端返回了空響應。");
   }
 
   try {
     return JSON.parse(text) as T;
   } catch {
-    throw new Error(`服务端返回了非 JSON 响应：${text.slice(0, 200)}`);
+    throw new Error(`服務端返回了非 JSON 響應：${text.slice(0, 200)}`);
   }
 }
 
@@ -94,7 +94,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
       }
 
       if (!persisted?.draft?.trim()) {
-        setError("没有找到可分析的语音文本，请返回语音录入页。");
+        setError("沒有找到可分析的語音文本，請返回語音錄入頁。");
         setAnalysisPending(false);
         return;
       }
@@ -118,7 +118,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
         const body = await readJsonResponse<{ moduleResults?: ModuleRecognitionResult[]; error?: string }>(response);
 
         if (!response.ok || !body.moduleResults) {
-          throw new Error(body.error ?? "模块分析失败");
+          throw new Error(body.error ?? "模塊分析失敗");
         }
 
         if (ignore) {
@@ -136,7 +136,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
         });
       } catch (currentError) {
         if (!ignore) {
-          setError(currentError instanceof Error ? currentError.message : "模块分析失败");
+          setError(currentError instanceof Error ? currentError.message : "模塊分析失敗");
         }
       } finally {
         if (!ignore) {
@@ -202,7 +202,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
 
   function handleStartModuleRecording() {
     if (!activeResult || !activeModuleId) {
-      setError("请先点击选择一个模块。");
+      setError("請先點擊選擇一個模塊。");
       return;
     }
 
@@ -246,7 +246,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
       const body = await readJsonResponse<{ report?: GeneratedReport; error?: string }>(response);
 
       if (!response.ok || !body.report) {
-        throw new Error(body.error ?? "生成报告失败");
+        throw new Error(body.error ?? "生成報告失敗");
       }
 
       writePersistedReportSession(storageKey, {
@@ -265,7 +265,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
         `/report/${elder.id}/result?modules=${serializeCareModuleIds(selectedModules)}${taskId ? `&taskId=${encodeURIComponent(taskId)}` : ""}`
       );
     } catch (currentError) {
-      setError(currentError instanceof Error ? currentError.message : "生成报告失败");
+      setError(currentError instanceof Error ? currentError.message : "生成報告失敗");
     } finally {
       setFinalizePending(false);
     }
@@ -286,28 +286,28 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
   }
 
   const recordLabel = !activeModuleId
-    ? "请选择模块"
+    ? "請選擇模塊"
     : recorder.isRecording
-      ? "停止录音"
+      ? "停止錄音"
       : recorder.isStarting
-        ? "启动中..."
+        ? "啟動中..."
         : recorder.isPending
         ? "整理中..."
-        : "开始录音";
+        : "開始錄音";
 
   return (
     <section className={styles.wrapper}>
       <div className={styles.summary}>
         <div>
-          <p className={styles.kicker}>模块分析</p>
-          <h2>识别结果</h2>
+          <p className={styles.kicker}>模塊分析</p>
+          <h2>識別結果</h2>
         </div>
         <span className={missingCount ? styles.missingBadge : styles.doneBadge}>
-          {analysisPending ? "正在分析" : missingCount ? `${missingCount} 个模块需补充` : "全部已识别"}
+          {analysisPending ? "正在分析" : missingCount ? `${missingCount} 個模塊需補充` : "全部已識別"}
         </span>
       </div>
 
-      {analysisPending ? <div className={styles.loading}>正在分析模块内容...</div> : null}
+      {analysisPending ? <div className={styles.loading}>正在分析模塊內容...</div> : null}
 
       <div className={styles.list}>
         {sortResults(results).map((result) => {
@@ -334,7 +334,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
                 <Image
                   className={styles.statusIcon}
                   src={result.recognized ? "/assets/icons/icon-check.svg" : "/assets/icons/icon-alert.svg"}
-                  alt={result.recognized ? "已完成" : "未识别"}
+                  alt={result.recognized ? "已完成" : "未識別"}
                   width={24}
                   height={24}
                 />
@@ -345,7 +345,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
                   value={value}
                   onClick={(event) => event.stopPropagation()}
                   onChange={(event) => updateResult(result.moduleId, event.target.value)}
-                  placeholder="未识别到相关内容，请在这里手动补充。"
+                  placeholder="未識別到相關內容，請在這裡手動補充。"
                 />
               ) : value ? (
                 <p className={styles.previewText}>{value}</p>
@@ -364,7 +364,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
           type="button"
           onClick={() => activeTextareaRef.current?.focus()}
           disabled={!activeModuleId || analysisPending}
-          aria-label="手动输入"
+          aria-label="手動輸入"
         >
           <Image src="/assets/icons/icon-keyboard.svg" alt="" width={44} height={44} />
         </button>
@@ -396,7 +396,7 @@ export function ReportAnalysisPage({ elder, taskId, selectedModules }: ReportAna
           ) : (
             <Image src="/assets/icons/icon-arrow-circle-right.svg" alt="" width={44} height={44} />
           )}
-          {selectedModules.includes("fall_prevention_exercise") ? "下一步：运动次数" : "确认并生成报告"}
+          {selectedModules.includes("fall_prevention_exercise") ? "下一步：運動次數" : "確認並生成報告"}
         </button>
       </div>
     </section>

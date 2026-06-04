@@ -56,7 +56,7 @@ function getTimeoutMs(task: LlmTask): number {
 
 function getFailurePrefix(): string {
   const provider = getLlmProviderName();
-  return provider === "dashscope" ? "阿里百炼连接失败" : `${provider} 连接失败`;
+  return provider === "dashscope" ? "阿里百鍊連接失敗" : `${provider} 連接失敗`;
 }
 
 function extractChoiceText(choice: ChatCompletionChoice | undefined): string {
@@ -133,20 +133,20 @@ export async function generateLlmText(params: {
     const text = extractChoiceText(body?.choices?.[0]);
 
     if (!text) {
-      throw new Error(`${failurePrefix}：模型返回空内容。`);
+      throw new Error(`${failurePrefix}：模型返回空內容。`);
     }
 
     return { text, model };
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error(`${failurePrefix}：请求超时（${Math.round(timeoutMs / 1000)} 秒）。`);
+      throw new Error(`${failurePrefix}：請求超時（${Math.round(timeoutMs / 1000)} 秒）。`);
     }
 
     if (error instanceof Error && error.message.startsWith(failurePrefix)) {
       throw error;
     }
 
-    const message = error instanceof Error ? error.message : "未知错误";
+    const message = error instanceof Error ? error.message : "未知錯誤";
     throw new Error(`${failurePrefix}：${message}`);
   } finally {
     clearTimeout(timeoutId);

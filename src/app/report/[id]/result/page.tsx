@@ -38,20 +38,20 @@ export default async function ReportResultRoute({
             <Image src="/assets/icons/icon-back.svg" alt="" width={32} height={32} />
           </Link>
           <div className={styles.headerMain}>
-            <h1 className={styles.title}>报告详情</h1>
-            <div className={styles.progress} aria-label="流程进度：第2步报告详情">
+            <h1 className={styles.title}>報告詳情</h1>
+            <div className={styles.progress} aria-label="流程進度：第2步報告詳情">
               <span className={styles.progressActive} />
               <span className={styles.progressActive} />
               <span />
             </div>
           </div>
-          <Link href="/" className={styles.closeButton} aria-label="关闭">
+          <Link href="/" className={styles.closeButton} aria-label="關閉">
             <Image src="/assets/icons/icon-close.svg" alt="" width={24} height={24} />
           </Link>
         </div>
 
         <div className={styles.elderMeta}>
-          <span className={styles.metaBadge}>风险 {elder.riskLevel}</span>
+          <span className={styles.metaBadge}>風險 {elder.riskLevel}</span>
           {elder.medicalNotes ? <span className={styles.metaText}>{elder.medicalNotes}</span> : null}
         </div>
 

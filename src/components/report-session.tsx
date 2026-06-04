@@ -87,7 +87,7 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
 
   function handleNext() {
     if (!draft.trim()) {
-      setError("请先录音或补充转录文字。");
+      setError("請先錄音或補充轉錄文字。");
       return;
     }
 
@@ -107,16 +107,16 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
   }
 
   const statusLabel = recorder.isRecording
-    ? "停止录音"
+    ? "停止錄音"
     : recorder.isStarting
-      ? "启动中..."
+      ? "啟動中..."
       : recorder.isPending
       ? "整理中..."
-      : "开始录音";
+      : "開始錄音";
 
   return (
     <section className={styles.wrapper}>
-      <div className={styles.moduleList} aria-label="已选择模块">
+      <div className={styles.moduleList} aria-label="已選擇模塊">
         {selectedModuleDefs.map((careModule) => (
           <article key={careModule.id} className={styles.moduleCard}>
             <h2 className={styles.moduleTitle}>【{careModule.number}】{careModule.title}</h2>
@@ -126,7 +126,7 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
       </div>
 
       <div className={styles.textbox}>
-        <p className={styles.textboxTitle}>开始汇总</p>
+        <p className={styles.textboxTitle}>開始彙總</p>
         <textarea
           ref={textareaRef}
           className={styles.textarea}
@@ -134,7 +134,7 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
           onChange={(event) => {
             setDraft(event.target.value);
           }}
-          placeholder="点击开始录音后，识别文字会显示在这里，也可以手动输入。"
+          placeholder="點擊開始錄音後，識別文字會顯示在這裡，也可以手動輸入。"
         />
         {error ? <div className={styles.error}>{error}</div> : null}
         {recorder.latencyLabel ? <div className={styles.latency}>{recorder.latencyLabel}</div> : null}
@@ -145,7 +145,7 @@ export function ReportSession({ elder, taskId, selectedModules }: ReportSessionP
           className={styles.keyboardButton}
           type="button"
           onClick={() => textareaRef.current?.focus()}
-          aria-label="手动输入"
+          aria-label="手動輸入"
         >
           <Image src="/assets/icons/icon-keyboard.svg" alt="" width={44} height={44} />
         </button>

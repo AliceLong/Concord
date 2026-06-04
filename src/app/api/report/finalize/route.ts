@@ -4,7 +4,7 @@ import { isCareModuleId } from "@/lib/care-modules";
 import { ElderNotFoundError, finalizeGeneratedReport } from "@/server/services/report";
 
 const moduleResultSchema = z.object({
-  moduleId: z.string().refine((value) => isCareModuleId(value), "照护模块无效。"),
+  moduleId: z.string().refine((value) => isCareModuleId(value), "照護模塊無效。"),
   transcript: z.string(),
   recognized: z.boolean(),
   extractedText: z.string(),
@@ -25,9 +25,9 @@ const requestSchema = z.object({
   sessionDate: z.string().optional(),
   selectedModules: z
     .array(z.string())
-    .min(1, "请至少选择一个照护模块。")
-    .refine((values) => values.every((value) => isCareModuleId(value)), "照护模块无效。"),
-  moduleResults: z.array(moduleResultSchema).min(1, "请先完成模块分析。"),
+    .min(1, "請至少選擇一個照護模塊。")
+    .refine((values) => values.every((value) => isCareModuleId(value)), "照護模塊無效。"),
+  moduleResults: z.array(moduleResultSchema).min(1, "請先完成模塊分析。"),
   exerciseResult: exerciseResultSchema.optional()
 });
 

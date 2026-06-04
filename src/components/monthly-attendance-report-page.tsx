@@ -14,7 +14,7 @@ export function MonthlyAttendanceReportPage({ report }: MonthlyAttendanceReportP
   const [sent, setSent] = useState(false);
 
   async function handleSendWhatsApp() {
-    const text = `${report.title} 已生成。完成率：${report.completionRate}，报告数量：${report.reportCount}。`;
+    const text = `${report.title} 已生成，請查看本月考勤表。`;
     const shareData: ShareData = {
       title: report.title,
       text
@@ -45,10 +45,10 @@ export function MonthlyAttendanceReportPage({ report }: MonthlyAttendanceReportP
           height={384}
           unoptimized
         />
-        <h1>本月考勤表已发送</h1>
-        <p>这个月真是辛苦啦!</p>
+        <h1>本月考勤表已發送</h1>
+        <p>這個月真是辛苦啦!</p>
         <Link className={styles.homeButton} href="/">
-          返回首页
+          返回首頁
         </Link>
       </section>
     );
@@ -60,24 +60,23 @@ export function MonthlyAttendanceReportPage({ report }: MonthlyAttendanceReportP
         <Link href="/attendance-reports" aria-label="返回">
           <Image src="/assets/icons/icon-back.svg" alt="" width={32} height={32} />
         </Link>
-        <h1>本月考勤报告</h1>
+        <h1>本月考勤報告</h1>
         <span />
       </header>
 
       <article className={styles.reportCard}>
-        <h2>{report.title}</h2>
-        <p>
-          {report.period}，共 {report.reportCount} 份报告，完成率 {report.completionRate}。
-        </p>
-        <div className={styles.placeholder}>
-          <Image className={styles.beeFlight} src="/assets/images/bee-flight.svg" alt="" width={152} height={137} />
-          <Image src="/assets/images/image-gallery-placeholder.svg" alt="本月考勤报告预览" width={96} height={96} />
-        </div>
-        <p className={styles.shareHint}>电脑端会打开 WhatsApp 文字分享；手机端如支持系统分享，可直接选择 WhatsApp。</p>
+        <Image
+          className={styles.reportImage}
+          src="/assets/images/monthly-attendance-report.png"
+          alt="本月考勤報告"
+          width={1363}
+          height={2026}
+          priority
+        />
       </article>
 
       <button className={styles.sendButton} type="button" onClick={handleSendWhatsApp}>
-        发送至 WhatsApp
+        發送至 WhatsApp
       </button>
     </section>
   );

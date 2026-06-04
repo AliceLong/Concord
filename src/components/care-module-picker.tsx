@@ -52,7 +52,7 @@ export function CareModulePicker({
 
   return (
     <section className={styles.wrapper}>
-      <div className={styles.honeycomb} aria-label="活动模块">
+      <div className={styles.honeycomb} aria-label="活動模塊">
         {modules.map((module) => {
           const selected = selectedModules.includes(module.id);
           const required = requiredModules.includes(module.id);
@@ -68,7 +68,7 @@ export function CareModulePicker({
               ].join(" ")}
               onClick={() => toggleModule(module)}
               aria-pressed={selected}
-              title={required ? "必选项目，已强制勾选" : selected ? "已选择，点击取消" : "点击选择"}
+              title={required ? "必選項目，已強制勾選" : selected ? "已選擇，點擊取消" : "點擊選擇"}
             >
               <span className={styles.hexNumber}>【{module.number}】</span>
               <span className={styles.hexTitle}>{formatModuleTitle(module)}</span>
@@ -87,11 +87,11 @@ export function CareModulePicker({
 function formatModuleTitle(module: CareModuleDefinition): string {
   switch (module.id) {
     case "delayed_recall":
-      return "问长者\n还记得...";
+      return "問長者\n三樣物品";
     case "auditory_attention_training":
-      return "听觉/\n专注力训练";
+      return "聽覺/\n專注力訓練";
     case "fall_prevention_exercise":
-      return "耆力/\n防跌运动";
+      return "耆力/\n防跌運動";
     default:
       return module.title;
   }

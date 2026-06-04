@@ -20,10 +20,10 @@ import type {
 } from "@/types/report";
 
 const MODULE_TITLE_PATTERN = /^(?:【|\[)\s*(.+?)\s*(?:】|\])$/;
-const SERVICE_CONTENT_LABELS = ["服务内容", "服務內容", "服務内容", "服务內容", "服务内容摘要", "服務內容摘要"];
-const ELDER_RESPONSE_LABELS = ["长者反应", "長者反應", "长者表现", "長者表現", "长者回应", "長者回應"];
-const COMPLETION_LABELS = ["完成情况", "完成情況", "完成状况", "完成狀況", "完成程度", "完成進度"];
-const REMARKS_LABELS = ["备注", "備註", "备注说明", "備註說明", "原因/备注", "原因／备注", "原因/備註"];
+const SERVICE_CONTENT_LABELS = ["服務內容", "服務內容", "服務內容", "服務內容", "服務內容摘要", "服務內容摘要"];
+const ELDER_RESPONSE_LABELS = ["長者反應", "長者反應", "長者表現", "長者表現", "長者回應", "長者回應"];
+const COMPLETION_LABELS = ["完成情況", "完成情況", "完成狀況", "完成狀況", "完成程度", "完成進度"];
+const REMARKS_LABELS = ["備註", "備註", "備註說明", "備註說明", "原因/備註", "原因／備註", "原因/備註"];
 const COGNITIVE_MODULE_IDS: CareModuleId[] = [
   "reality_orientation",
   "short_term_memory",
@@ -37,37 +37,37 @@ const COGNITIVE_MODULE_IDS: CareModuleId[] = [
 ];
 
 const FORM_DRAFT_FIELDS: Array<{ key: keyof FormDraftSection; labels: string[] }> = [
-  { key: "attendanceCount", labels: ["在场人数", "在場人數"] },
-  { key: "attendees", labels: ["在场人士", "在場人士"] },
-  { key: "environmentIssue", labels: ["环境异常", "環境異常"] },
-  { key: "bloodPressure", labels: ["血压", "血壓"] },
+  { key: "attendanceCount", labels: ["在場人數", "在場人數"] },
+  { key: "attendees", labels: ["在場人士", "在場人士"] },
+  { key: "environmentIssue", labels: ["環境異常", "環境異常"] },
+  { key: "bloodPressure", labels: ["血壓", "血壓"] },
   { key: "heartRate", labels: ["心跳"] },
   { key: "bloodOxygen", labels: ["血氧"] },
-  { key: "basicServices", labels: ["基本服务", "基本服務"] },
-  { key: "basicServiceReason", labels: ["基本服务未完成原因", "基本服務未完成原因"] },
-  { key: "cognitiveTrainingProvided", labels: ["认知训练提供", "認知訓練提供"] },
-  { key: "realityOrientationSharing", labels: ["1.0现实导向", "1.0現實導向"] },
-  { key: "realityOrientationQuestioning", labels: ["1.1现实导向", "1.1現實導向"] },
-  { key: "shortTermMemoryObjects", labels: ["2.0短期记忆", "2.0短期記憶"] },
-  { key: "shortTermMemoryCards", labels: ["2.1短期记忆", "2.1短期記憶"] },
-  { key: "reminiscenceTherapy", labels: ["3.0怀缅治疗", "3.0懷緬治療"] },
-  { key: "delayedRecall", labels: ["4.0延迟回忆", "4.0延遲回憶"] },
-  { key: "verbalFluencyNaming", labels: ["5.1说话流畅度", "5.1說話流暢度"] },
-  { key: "verbalFluencyRepeat", labels: ["5.2说话流畅度", "5.2說話流暢度"] },
-  { key: "arithmeticTraining", labels: ["6.0运算", "6.0運算"] },
-  { key: "associationTrainingChain", labels: ["7.1联想训练", "7.1聯想訓練"] },
-  { key: "associationTrainingHint", labels: ["7.2联想训练", "7.2聯想訓練"] },
-  { key: "auditoryAttentionDigits", labels: ["8.1听觉/专注力训练", "8.1聽覺/專注力訓練"] },
-  { key: "auditoryAttentionMenu", labels: ["8.2听觉/专注力训练", "8.2聽覺/專注力訓練"] },
-  { key: "auditoryAttentionSpotDifference", labels: ["8.3听觉/专注力训练", "8.3聽覺/專注力訓練"] },
-  { key: "vitalSignsModule", labels: ["9.0生命徵象", "9.0生命征象"] },
-  { key: "cognitiveTrainingReason", labels: ["认知训练未完成原因", "認知訓練未完成原因"] },
-  { key: "motionTrainingProvided", labels: ["运动训练提供", "運動訓練提供"] },
-  { key: "motionTrainingReason", labels: ["运动训练未完成原因", "運動訓練未完成原因"] },
-  { key: "specialServiceProvided", labels: ["特约专项服务", "特約專項服務"] },
-  { key: "specialServiceDetail", labels: ["特约专项服务内容", "特約專項服務內容"] },
-  { key: "valueAddedService", labels: ["增值服务", "增值服務"] },
-  { key: "brainTraining", labels: ["健脑八式", "健腦八式"] },
+  { key: "basicServices", labels: ["基本服務", "基本服務"] },
+  { key: "basicServiceReason", labels: ["基本服務未完成原因", "基本服務未完成原因"] },
+  { key: "cognitiveTrainingProvided", labels: ["認知訓練提供", "認知訓練提供"] },
+  { key: "realityOrientationSharing", labels: ["1.0現實導向", "1.0現實導向"] },
+  { key: "realityOrientationQuestioning", labels: ["1.1現實導向", "1.1現實導向"] },
+  { key: "shortTermMemoryObjects", labels: ["2.0短期記憶", "2.0短期記憶"] },
+  { key: "shortTermMemoryCards", labels: ["2.1短期記憶", "2.1短期記憶"] },
+  { key: "reminiscenceTherapy", labels: ["3.0懷緬治療", "3.0懷緬治療"] },
+  { key: "delayedRecall", labels: ["4.0延遲迴憶", "4.0延遲回憶"] },
+  { key: "verbalFluencyNaming", labels: ["5.1說話流暢度", "5.1說話流暢度"] },
+  { key: "verbalFluencyRepeat", labels: ["5.2說話流暢度", "5.2說話流暢度"] },
+  { key: "arithmeticTraining", labels: ["6.0運算", "6.0運算"] },
+  { key: "associationTrainingChain", labels: ["7.1聯想訓練", "7.1聯想訓練"] },
+  { key: "associationTrainingHint", labels: ["7.2聯想訓練", "7.2聯想訓練"] },
+  { key: "auditoryAttentionDigits", labels: ["8.1聽覺/專注力訓練", "8.1聽覺/專注力訓練"] },
+  { key: "auditoryAttentionMenu", labels: ["8.2聽覺/專注力訓練", "8.2聽覺/專注力訓練"] },
+  { key: "auditoryAttentionSpotDifference", labels: ["8.3聽覺/專注力訓練", "8.3聽覺/專注力訓練"] },
+  { key: "vitalSignsModule", labels: ["9.0生命徵象", "9.0生命徵象"] },
+  { key: "cognitiveTrainingReason", labels: ["認知訓練未完成原因", "認知訓練未完成原因"] },
+  { key: "motionTrainingProvided", labels: ["運動訓練提供", "運動訓練提供"] },
+  { key: "motionTrainingReason", labels: ["運動訓練未完成原因", "運動訓練未完成原因"] },
+  { key: "specialServiceProvided", labels: ["特約專項服務", "特約專項服務"] },
+  { key: "specialServiceDetail", labels: ["特約專項服務內容", "特約專項服務內容"] },
+  { key: "valueAddedService", labels: ["增值服務", "增值服務"] },
+  { key: "brainTraining", labels: ["健腦八式", "健腦八式"] },
   { key: "trainingOther", labels: ["其他", "Others"] }
 ];
 
@@ -131,7 +131,7 @@ function extractJsonObject(rawText: string): unknown {
   const lastBrace = cleaned.lastIndexOf("}");
 
   if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-    throw new Error("AI 服务返回了非 JSON 模块分析结果。");
+    throw new Error("AI 服務返回了非 JSON 模塊分析結果。");
   }
 
   return JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
@@ -167,7 +167,7 @@ function parseModuleAnalysisResponse(rawText: string, selectedModules: CareModul
     const suggestedReportText = recognized ? normalizeTextValue(item.suggestedReportText) || extractedText : "";
     const missingReason = recognized
       ? undefined
-      : normalizeTextValue(item.missingReason) || "ASR 未提及该模块内容。";
+      : normalizeTextValue(item.missingReason) || "ASR 未提及該模塊內容。";
 
     normalizedResults.push({
       moduleId,
@@ -187,7 +187,7 @@ function parseModuleAnalysisResponse(rawText: string, selectedModules: CareModul
         recognized: false,
         extractedText: "",
         suggestedReportText: "",
-        missingReason: "AI 服务未返回该模块的分析结果。"
+        missingReason: "AI 服務未返回該模塊的分析結果。"
       });
     }
   }
@@ -208,7 +208,7 @@ function assignIfEmpty(target: FormDraftSection, key: keyof FormDraftSection, va
 }
 
 function isLowSignalFormValue(value: string): boolean {
-  return ["是", "有", "已进行", "已進行", "已完成", "完成", "全部完成"].includes(value.trim());
+  return ["是", "有", "已進行", "已進行", "已完成", "完成", "全部完成"].includes(value.trim());
 }
 
 function normalizeLineValue(value: string | null | undefined): string | null {
@@ -295,7 +295,7 @@ function normalizeModuleKey(value: string): string {
   return value
     .trim()
     .replace(/^[【\[]|[】\]]$/g, "")
-    .replace(/^模块\s*[：:]\s*/i, "")
+    .replace(/^模塊\s*[：:]\s*/i, "")
     .replace(/^[0-9]+(?:\.[0-9]+)*\s*/u, "")
     .replace(/\s+/g, "")
     .replace(/（/g, "(")
@@ -373,7 +373,7 @@ function buildFallbackFormDraft(params: {
   const lowerTranscript = transcript.toLowerCase();
 
   draft.environmentIssue =
-    params.summaryAndRemarks.incident && params.summaryAndRemarks.incident !== "无"
+    params.summaryAndRemarks.incident && params.summaryAndRemarks.incident !== "無"
       ? params.summaryAndRemarks.incident
       : "沒有";
   draft.basicServices = params.completedServices.serviceItems.length
@@ -393,12 +393,12 @@ function buildFallbackFormDraft(params: {
         .map((item) => [item.completion, item.remarks].filter(Boolean).join("；"))
         .filter(Boolean)
         .join("；")
-    : "无";
+    : "無";
 
   draft.bloodPressure =
-    extractVitalPattern(transcript, [/(?:血压|血壓)[^\d]{0,6}(\d{2,3}\s*\/\s*\d{2,3})/i]) ?? null;
+    extractVitalPattern(transcript, [/(?:血壓|血壓)[^\d]{0,6}(\d{2,3}\s*\/\s*\d{2,3})/i]) ?? null;
   draft.heartRate =
-    extractVitalPattern(transcript, [/(?:心跳|脈搏|脉搏)[^\d]{0,6}(\d{2,3})/i]) ?? null;
+    extractVitalPattern(transcript, [/(?:心跳|脈搏|脈搏)[^\d]{0,6}(\d{2,3})/i]) ?? null;
   draft.bloodOxygen =
     extractVitalPattern(transcript, [/(?:血氧)[^\d]{0,6}(\d{2,3}%?)/i]) ?? null;
 
@@ -408,10 +408,10 @@ function buildFallbackFormDraft(params: {
 
     switch (report.moduleId as CareModuleId) {
       case "reality_orientation":
-        if (/新闻|資訊|资讯|分享/u.test(content)) {
+        if (/新聞|資訊|資訊|分享/u.test(content)) {
           assignIfEmpty(draft, "realityOrientationSharing", summary);
         }
-        if (/日期|時間|时间|星期|地點|地点|地區|地区/u.test(content)) {
+        if (/日期|時間|時間|星期|地點|地點|地區|地區/u.test(content)) {
           assignIfEmpty(draft, "realityOrientationQuestioning", summary);
         }
         assignIfEmpty(draft, "realityOrientationSharing", summary);
@@ -432,7 +432,7 @@ function buildFallbackFormDraft(params: {
         assignIfEmpty(draft, "delayedRecall", summary);
         break;
       case "verbal_fluency":
-        if (/朗读|朗讀|复述|複述|跟读|跟讀|短句/u.test(content)) {
+        if (/朗讀|朗讀|複述|複述|跟讀|跟讀|短句/u.test(content)) {
           assignIfEmpty(draft, "verbalFluencyRepeat", summary);
         } else {
           assignIfEmpty(draft, "verbalFluencyNaming", summary);
@@ -443,7 +443,7 @@ function buildFallbackFormDraft(params: {
         assignIfEmpty(draft, "arithmeticTraining", summary);
         break;
       case "association_training":
-        if (/接龙|接龍/u.test(content)) {
+        if (/接龍|接龍/u.test(content)) {
           assignIfEmpty(draft, "associationTrainingChain", summary);
         } else {
           assignIfEmpty(draft, "associationTrainingHint", summary);
@@ -451,13 +451,13 @@ function buildFallbackFormDraft(params: {
         assignIfEmpty(draft, "associationTrainingChain", summary);
         break;
       case "auditory_attention_training":
-        if (/数字|數字|顺序|順序|倒序/u.test(content)) {
+        if (/數字|數字|順序|順序|倒序/u.test(content)) {
           assignIfEmpty(draft, "auditoryAttentionDigits", summary);
         }
-        if (/餐|酒樓|酒楼|餐單|餐单/u.test(content)) {
+        if (/餐|酒樓|酒樓|餐單|餐單/u.test(content)) {
           assignIfEmpty(draft, "auditoryAttentionMenu", summary);
         }
-        if (/找不同|不同之處|不同之处/u.test(content)) {
+        if (/找不同|不同之處|不同之處/u.test(content)) {
           assignIfEmpty(draft, "auditoryAttentionSpotDifference", summary);
         }
         assignIfEmpty(draft, "auditoryAttentionDigits", summary);
@@ -476,7 +476,7 @@ function buildFallbackFormDraft(params: {
     draft.vitalSignsModule = draft.vitalSignsModule ?? "已量度生命徵象";
   }
 
-  if (!draft.specialServiceProvided && lowerTranscript.includes("特约")) {
+  if (!draft.specialServiceProvided && lowerTranscript.includes("特約")) {
     draft.specialServiceProvided = "有";
   }
 
@@ -513,7 +513,7 @@ function parseModuleReports(section: string, selectedModules: CareModuleId[]): M
 
   for (const line of lines) {
     const labelMatch = line.match(
-      /^(服务内容|服務內容|服務内容|服务內容|服务内容摘要|服務內容摘要|長者反應|长者反应|长者表现|長者表現|长者回应|長者回應|完成情況|完成情况|完成狀況|完成状况|完成程度|完成進度|備註|备注|備註說明|备注说明|原因\/备注|原因\/備註|原因／备注|原因／備註)\s*[：:]\s*(.*)$/
+      /^(服務內容|服務內容|服務內容|服務內容|服務內容摘要|服務內容摘要|長者反應|長者反應|長者表現|長者表現|長者回應|長者回應|完成情況|完成情況|完成狀況|完成狀況|完成程度|完成進度|備註|備註|備註說明|備註說明|原因\/備註|原因\/備註|原因／備註|原因／備註)\s*[：:]\s*(.*)$/
     );
 
     if (labelMatch) {
@@ -578,11 +578,11 @@ function parseModuleReports(section: string, selectedModules: CareModuleId[]): M
 function parseStructuredText(text: string, selectedModules: CareModuleId[], transcript: string) {
   const cleaned = text.trim().replace(/^```[\s\S]*?\n/, "").replace(/```$/i, "").trim();
   const headings = [
-    ["【长者状态】", "【長者狀態】"],
-    ["【已完成服务】", "【已完成服務】"],
-    ["【模块化记录】", "【模組化記錄】", "【模块化紀錄】"],
-    ["【总结 / 特别事故 / 建议】", "【總結 / 特別事故 / 建議】"],
-    ["【表单草稿】", "【表單草稿】"]
+    ["【長者狀態】", "【長者狀態】"],
+    ["【已完成服務】", "【已完成服務】"],
+    ["【模塊化記錄】", "【模組化記錄】", "【模塊化紀錄】"],
+    ["【總結 / 特別事故 / 建議】", "【總結 / 特別事故 / 建議】"],
+    ["【表單草稿】", "【表單草稿】"]
   ];
   const elderStatusSection = extractSectionByAliases(cleaned, headings);
   const completedServicesSection = extractSectionByAliases(cleaned, headings.slice(1));
@@ -591,21 +591,21 @@ function parseStructuredText(text: string, selectedModules: CareModuleId[], tran
   const formDraftSection = extractSectionByAliases(cleaned, headings.slice(4));
 
   const elderStatus: ElderStatusSection = {
-    statusTags: parseCsvLikeList(extractLabeledValue(elderStatusSection, ["状态标签", "狀態標籤"])),
-    interactionPerformance: extractLabeledValue(elderStatusSection, ["互动表现", "互動表現"]),
-    physicalCondition: extractLabeledValue(elderStatusSection, ["身体情况", "身體情況"])
+    statusTags: parseCsvLikeList(extractLabeledValue(elderStatusSection, ["狀態標籤", "狀態標籤"])),
+    interactionPerformance: extractLabeledValue(elderStatusSection, ["互動表現", "互動表現"]),
+    physicalCondition: extractLabeledValue(elderStatusSection, ["身體情況", "身體情況"])
   };
 
   const completedServices: CompletedServicesSection = {
-    serviceItems: parseCsvLikeList(extractLabeledValue(completedServicesSection, ["服务项目", "服務項目"])),
-    completion: extractLabeledValue(completedServicesSection, ["完成情况", "完成情況"]),
-    elderPerformance: extractLabeledValue(completedServicesSection, ["长者表现", "長者表現"])
+    serviceItems: parseCsvLikeList(extractLabeledValue(completedServicesSection, ["服務項目", "服務項目"])),
+    completion: extractLabeledValue(completedServicesSection, ["完成情況", "完成情況"]),
+    elderPerformance: extractLabeledValue(completedServicesSection, ["長者表現", "長者表現"])
   };
 
   const summaryAndRemarks: SummaryRemarksSection = {
-    summary: extractLabeledValue(summarySection, ["总结", "總結"]),
-    incident: extractLabeledValue(summarySection, ["特别事故", "特別事故"]),
-    recommendation: extractLabeledValue(summarySection, ["后续建议", "後續建議"])
+    summary: extractLabeledValue(summarySection, ["總結", "總結"]),
+    incident: extractLabeledValue(summarySection, ["特別事故", "特別事故"]),
+    recommendation: extractLabeledValue(summarySection, ["後續建議", "後續建議"])
   };
 
   const moduleReports = parseModuleReports(moduleSection, selectedModules);
@@ -656,7 +656,7 @@ async function tryGenerateStructuredReport(params: {
   const rawText = response.text.trim();
 
   if (!rawText) {
-    throw new Error("AI 服务返回空报告。");
+    throw new Error("AI 服務返回空報告。");
   }
 
   const parsed = parseStructuredText(rawText, params.selectedModules, params.transcript);
@@ -686,7 +686,7 @@ export async function analyzeModulesWithLlm(params: {
   const rawText = response.text.trim();
 
   if (!rawText) {
-    throw new Error("阿里百炼连接失败：模块分析返回空内容。");
+    throw new Error("阿里百鍊連接失敗：模塊分析返回空內容。");
   }
 
   return parseModuleAnalysisResponse(rawText, params.selectedModules);
@@ -731,8 +731,8 @@ export async function generateAiReport(params: {
   }
 
   if (!elderStatus || !completedServices || !summaryAndRemarks || !formDraft) {
-    const message = lastError?.message ?? "报告生成失败。";
-    throw new Error(message.startsWith("阿里百炼连接失败") ? message : `阿里百炼连接失败：${message}`);
+    const message = lastError?.message ?? "報告生成失敗。";
+    throw new Error(message.startsWith("阿里百鍊連接失敗") ? message : `阿里百鍊連接失敗：${message}`);
   }
 
   return {

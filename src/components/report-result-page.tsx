@@ -27,7 +27,7 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
 
   if (!text) {
-    throw new Error("服务端返回了空响应。");
+    throw new Error("服務端返回了空響應。");
   }
 
   return JSON.parse(text) as T;
@@ -51,7 +51,7 @@ function parseFilename(disposition: string | null, fallback: string) {
 function buildPatientSnapshot(elder: ElderlyProfile): EditablePatientSnapshot {
   return {
     fullName: elder.fullName,
-    orderNo: elder.orderNo ?? elder.roomNo ?? "未设定",
+    orderNo: elder.orderNo ?? elder.roomNo ?? "未設定",
     bloodPressure: elder.vitals?.bloodPressure ?? "",
     heartRate: elder.vitals?.heartRate ?? "",
     bloodOxygen: elder.vitals?.bloodOxygen ?? "",
@@ -61,10 +61,10 @@ function buildPatientSnapshot(elder: ElderlyProfile): EditablePatientSnapshot {
 
 function buildModuleText(item: ModuleReportItem): string {
   return [
-    item.serviceContent ? `服务内容：${item.serviceContent}` : "",
-    item.elderResponse ? `长者反应：${item.elderResponse}` : "",
-    item.completion ? `完成情况：${item.completion}` : "",
-    item.remarks ? `备注：${item.remarks}` : ""
+    item.serviceContent ? `服務內容：${item.serviceContent}` : "",
+    item.elderResponse ? `長者反應：${item.elderResponse}` : "",
+    item.completion ? `完成情況：${item.completion}` : "",
+    item.remarks ? `備註：${item.remarks}` : ""
   ]
     .filter(Boolean)
     .join("\n");
@@ -143,7 +143,7 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
               ...item,
               serviceContent: value || null,
               elderResponse: item.elderResponse,
-              completion: value ? item.completion ?? "已补充" : null,
+              completion: value ? item.completion ?? "已補充" : null,
               remarks: item.remarks
             }
           : item
@@ -156,7 +156,7 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
 
   async function handleExport() {
     if (!report) {
-      setError("未找到可导出的报告，请返回录音页重新生成。");
+      setError("未找到可導出的報告，請返回錄音頁重新生成。");
       return;
     }
 
@@ -177,7 +177,7 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
 
       if (!response.ok) {
         const body = await readJsonResponse<{ error?: string }>(response);
-        throw new Error(body.error ?? "导出失败");
+        throw new Error(body.error ?? "導出失敗");
       }
 
       const blob = await response.blob();
@@ -192,7 +192,7 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (currentError) {
-      setError(currentError instanceof Error ? currentError.message : "导出失败");
+      setError(currentError instanceof Error ? currentError.message : "導出失敗");
     } finally {
       setExportPending(false);
     }
@@ -202,9 +202,9 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
     return (
       <section className={styles.wrapper}>
         <div className={styles.emptyState}>
-          <p>当前会话中没有可展示的报告，请返回录音页重新生成。</p>
+          <p>當前會話中沒有可展示的報告，請返回錄音頁重新生成。</p>
           <Link className={styles.actionButton} href={asrHref}>
-            返回录音页
+            返回錄音頁
           </Link>
         </div>
       </section>
@@ -237,7 +237,7 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
         </label>
       </div>
 
-      <div className={styles.tagsList} aria-label="状态标签">
+      <div className={styles.tagsList} aria-label="狀態標籤">
         {patient.statusTags.map((tag) => (
           <span key={tag}>{tag}</span>
         ))}
@@ -245,7 +245,7 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
 
       <div className={styles.vitals}>
         <label>
-          <span>血压</span>
+          <span>血壓</span>
           <input value={patient.bloodPressure} onChange={(event) => updatePatient("bloodPressure", event.target.value)} />
         </label>
         <label>
@@ -270,7 +270,7 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
                 <h2>【{careModule.number}】{careModule.title}</h2>
                 <Image
                   src={ok ? "/assets/icons/icon-check.svg" : "/assets/icons/icon-alert.svg"}
-                  alt={ok ? "已完成" : "未识别"}
+                  alt={ok ? "已完成" : "未識別"}
                   width={24}
                   height={24}
                 />
@@ -279,7 +279,7 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
               <textarea
                 value={text}
                 onChange={(event) => updateModule(careModule.id, event.target.value)}
-                placeholder="点击卡片后可在这里手动输入或修改。"
+                placeholder="點擊卡片後可在這裡手動輸入或修改。"
               />
             </article>
           );
@@ -289,11 +289,11 @@ export function ReportResultPage({ elder, taskId, selectedModules }: ReportResul
       <div className={styles.floatingActions}>
         <button className={styles.primaryButton} onClick={handleExport} disabled={exportPending}>
           {exportPending ? <RefreshCcw size={16} className={styles.spin} /> : null}
-          上传至 Google Form
+          上傳至 Google Form
         </button>
         <Link className={styles.whatsappButton} href={whatsappHref}>
           <Image src="/assets/icons/icon-arrow-circle-right.svg" alt="" width={44} height={44} />
-          WhatsApp 报告
+          WhatsApp 報告
         </Link>
       </div>
     </section>

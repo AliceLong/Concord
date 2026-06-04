@@ -23,7 +23,7 @@ export function buildRecognitionResults(
         recognized,
         extractedText,
         suggestedReportText: extractedText,
-        missingReason: recognized ? undefined : "未在语音内容中识别到该模块相关描述。"
+        missingReason: recognized ? undefined : "未在語音內容中識別到該模塊相關描述。"
       };
     })
     .sort((a, b) => Number(a.recognized) - Number(b.recognized));
@@ -78,7 +78,7 @@ export function buildAnalysisResultsFromTranscript(
         recognized,
         extractedText: recognized ? `${careModule.fallbackLead}${transcript}` : "",
         suggestedReportText: recognized ? `${careModule.fallbackLead}${transcript}` : "",
-        missingReason: recognized ? undefined : "未在语音内容中识别到该模块相关描述。"
+        missingReason: recognized ? undefined : "未在語音內容中識別到該模塊相關描述。"
       };
     })
     .sort((a, b) => Number(a.recognized) - Number(b.recognized));
@@ -90,12 +90,12 @@ export function buildExerciseText(exercise?: ExerciseResult): string {
   }
 
   const labels: Array<[keyof ExerciseResult, string]> = [
-    ["neck", "拉筋运动 [颈部]"],
-    ["shoulder", "拉筋运动 [肩膊(A、B)]"],
-    ["chestBack", "拉筋运动 [胸背(A、B)]"],
-    ["waist", "拉筋运动 [腰部(A、B)]"],
-    ["leg", "拉筋运动 [腿部(一、二)]"],
-    ["heel", "拉筋运动 [脚跟]"]
+    ["neck", "拉筋運動 [頸部]"],
+    ["shoulder", "拉筋運動 [肩膊(A、B)]"],
+    ["chestBack", "拉筋運動 [胸背(A、B)]"],
+    ["waist", "拉筋運動 [腰部(A、B)]"],
+    ["leg", "拉筋運動 [腿部(一、二)]"],
+    ["heel", "拉筋運動 [腳跟]"]
   ];
   const lines = labels
     .map(([key, label]) => {
@@ -104,7 +104,7 @@ export function buildExerciseText(exercise?: ExerciseResult): string {
     })
     .filter(Boolean);
 
-  return lines.length ? ["【10】耆力 / 防跌运动次数", ...lines].join("\n") : "";
+  return lines.length ? ["【10】耆力 / 防跌運動次數", ...lines].join("\n") : "";
 }
 
 export function buildCombinedTranscriptFromResults(results: ModuleRecognitionResult[]): string {

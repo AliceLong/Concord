@@ -37,11 +37,11 @@ export default async function ReportPage({
           >
             <Image src="/assets/icons/icon-back.svg" alt="" width={32} height={32} />
           </Link>
-          <h1 className={styles.title}>语音录入</h1>
+          <h1 className={styles.title}>語音錄入</h1>
           <Link href="/" className={styles.closeButton}>
             <Image src="/assets/icons/icon-close.svg" alt="" width={24} height={24} />
           </Link>
-          <div className={styles.progress} aria-label="流程进度：第1步语音录入">
+          <div className={styles.progress} aria-label="流程進度：第1步語音錄入">
             <span className={`${styles.progressSegment} ${styles.progressSegmentActive}`} />
             <span className={styles.progressSegment} />
             <span className={styles.progressSegment} />

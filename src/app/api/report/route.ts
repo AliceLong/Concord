@@ -9,8 +9,8 @@ const requestSchema = z.object({
   sessionDate: z.string().optional(),
   selectedModules: z
     .array(z.string())
-    .min(1, "请至少选择一个照护模块。")
-    .refine((values) => values.every((value) => isCareModuleId(value)), "照护模块无效。")
+    .min(1, "請至少選擇一個照護模塊。")
+    .refine((values) => values.every((value) => isCareModuleId(value)), "照護模塊無效。")
 });
 
 export async function POST(request: Request) {

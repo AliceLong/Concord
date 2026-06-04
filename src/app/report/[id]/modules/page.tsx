@@ -30,7 +30,7 @@ export default async function CareModulesPage({
           <Link href="/" className={styles.backButton}>
             <Image src="/assets/icons/icon-back.svg" alt="" width={32} height={32} />
           </Link>
-          <h1 className={styles.title}>活动选择</h1>
+          <h1 className={styles.title}>活動選擇</h1>
         </div>
 
         <CareModulePicker

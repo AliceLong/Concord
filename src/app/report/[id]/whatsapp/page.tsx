@@ -38,14 +38,14 @@ export default async function WhatsAppRoute({
             <Image src="/assets/icons/icon-back.svg" alt="" width={32} height={32} />
           </Link>
           <div className={styles.headerMain}>
-            <h1 className={styles.title}>WhatsApp报告</h1>
-            <div className={styles.progress} aria-label="流程进度：第3步 WhatsApp 报告">
+            <h1 className={styles.title}>WhatsApp報告</h1>
+            <div className={styles.progress} aria-label="流程進度：第3步 WhatsApp 報告">
               <span className={styles.progressActive} />
               <span className={styles.progressActive} />
               <span className={styles.progressActive} />
             </div>
           </div>
-          <Link href="/" className={styles.closeButton} aria-label="关闭">
+          <Link href="/" className={styles.closeButton} aria-label="關閉">
             <Image src="/assets/icons/icon-close.svg" alt="" width={24} height={24} />
           </Link>
         </div>

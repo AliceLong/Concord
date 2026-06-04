@@ -22,12 +22,12 @@ interface ExercisePageProps {
 }
 
 const exerciseFields: Array<{ key: keyof ExerciseResult; label: string }> = [
-  { key: "neck", label: "拉筋运动 [颈部]" },
-  { key: "shoulder", label: "拉筋运动 [肩膊(A、B)]" },
-  { key: "chestBack", label: "拉筋运动 [胸背(A、B)]" },
-  { key: "waist", label: "拉筋运动 [腰部(A、B)]" },
-  { key: "leg", label: "拉筋运动 [腿部(一、二)]" },
-  { key: "heel", label: "拉筋运动 [脚跟]" }
+  { key: "neck", label: "拉筋運動 [頸部]" },
+  { key: "shoulder", label: "拉筋運動 [肩膊(A、B)]" },
+  { key: "chestBack", label: "拉筋運動 [胸背(A、B)]" },
+  { key: "waist", label: "拉筋運動 [腰部(A、B)]" },
+  { key: "leg", label: "拉筋運動 [腿部(一、二)]" },
+  { key: "heel", label: "拉筋運動 [腳跟]" }
 ];
 
 const emptyExercise: ExerciseResult = {
@@ -43,7 +43,7 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
 
   if (!text) {
-    throw new Error("服务端返回了空响应。");
+    throw new Error("服務端返回了空響應。");
   }
 
   return JSON.parse(text) as T;
@@ -91,7 +91,7 @@ export function ExercisePage({ elder, taskId, selectedModules }: ExercisePagePro
       const body = await readJsonResponse<{ report?: GeneratedReport; error?: string }>(response);
 
       if (!response.ok || !body.report) {
-        throw new Error(body.error ?? "生成报告失败");
+        throw new Error(body.error ?? "生成報告失敗");
       }
 
       writePersistedReportSession(storageKey, {
@@ -110,7 +110,7 @@ export function ExercisePage({ elder, taskId, selectedModules }: ExercisePagePro
         `/report/${elder.id}/result?modules=${serializeCareModuleIds(selectedModules)}${taskId ? `&taskId=${encodeURIComponent(taskId)}` : ""}`
       );
     } catch (currentError) {
-      setError(currentError instanceof Error ? currentError.message : "生成报告失败");
+      setError(currentError instanceof Error ? currentError.message : "生成報告失敗");
     } finally {
       setPending(false);
     }
@@ -120,7 +120,7 @@ export function ExercisePage({ elder, taskId, selectedModules }: ExercisePagePro
     <section className={styles.wrapper}>
       <div className={styles.heading}>
         <p>【10】</p>
-        <h2>耆力 / 防跌运动</h2>
+        <h2>耆力 / 防跌運動</h2>
       </div>
 
       <div className={styles.list}>
@@ -132,7 +132,7 @@ export function ExercisePage({ elder, taskId, selectedModules }: ExercisePagePro
               value={exercise[field.key]}
               onChange={(event) => updateField(field.key, event.target.value)}
               inputMode="numeric"
-              placeholder="请输入次数"
+              placeholder="請輸入次數"
             />
           </label>
         ))}
@@ -142,7 +142,7 @@ export function ExercisePage({ elder, taskId, selectedModules }: ExercisePagePro
 
       <button className={styles.confirmButton} type="button" onClick={handleConfirm} disabled={pending}>
         {pending ? <RefreshCcw size={16} className={styles.spin} /> : null}
-        确认
+        確認
       </button>
     </section>
   );

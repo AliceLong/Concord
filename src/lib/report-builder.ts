@@ -20,8 +20,8 @@ function buildFallbackModuleReports(selectedModules: CareModuleId[], transcript:
       moduleTitle: careModule.title,
       serviceContent: matched ? `${careModule.fallbackLead}${transcriptLine}` : null,
       elderResponse: matched ? null : null,
-      completion: matched ? "已记录" : null,
-      remarks: matched ? `建议后续继续围绕${careModule.focusPoints.slice(0, 2).join("、")}进行持续观察与记录。` : null
+      completion: matched ? "已記錄" : null,
+      remarks: matched ? `建議後續繼續圍繞${careModule.focusPoints.slice(0, 2).join("、")}進行持續觀察與記錄。` : null
     };
   });
 }
@@ -39,17 +39,17 @@ export function generateReport(
   const elderStatus = {
     statusTags: [],
     interactionPerformance: null,
-    physicalCondition: transcript.trim() ? "已根据确认文本整理" : null
+    physicalCondition: transcript.trim() ? "已根據確認文本整理" : null
   };
   const completedServices = {
     serviceItems: moduleReports.map((item) => item.moduleTitle),
-    completion: transcript.trim() ? "已记录" : null,
+    completion: transcript.trim() ? "已記錄" : null,
     elderPerformance: null
   };
   const summaryAndRemarks = {
     summary: transcript.trim()
-      ? `${elder.fullName} 本次照护记录已整理完成，重点涉及${moduleReports.map((item) => item.moduleTitle).join("、")}。`
-      : `${elder.fullName} 本次照护未记录到有效文字内容。`,
+      ? `${elder.fullName} 本次照護記錄已整理完成，重點涉及${moduleReports.map((item) => item.moduleTitle).join("、")}。`
+      : `${elder.fullName} 本次照護未記錄到有效文字內容。`,
     incident: null,
     recommendation: null
   };

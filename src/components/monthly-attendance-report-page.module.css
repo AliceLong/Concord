@@ -2,7 +2,7 @@
   width: min(100%, 390px);
   min-height: 100dvh;
   margin: 0 auto;
-  padding: 38px 16px 88px;
+  padding: 64px 16px 104px;
   background: #fff7df;
 }
 
@@ -28,58 +28,25 @@
 .topBar h1 {
   margin: 0;
   color: #1d1d17;
-  font-size: 22px;
+  font-size: 25px;
   line-height: 1.15;
-  font-weight: 800;
+  font-weight: 900;
   text-align: center;
 }
 
 .reportCard {
-  margin-top: 20px;
-  padding: 16px;
-  border-radius: 16px;
+  margin-top: 42px;
+  overflow: hidden;
+  border-radius: 2px;
   background: #ffffff;
   box-shadow: 0 8px 20px rgba(55, 49, 28, 0.08);
 }
 
-.reportCard h2 {
-  margin: 0;
-  color: #2b2921;
-  font-size: 20px;
-  line-height: 1.2;
-  font-weight: 800;
-}
-
-.reportCard p {
-  margin: 8px 0 14px;
-  color: #746d5e;
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.placeholder {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 360px;
-  border-radius: 12px;
-  background: #d9d9d9;
-  overflow: hidden;
-}
-
-.placeholder img {
-  width: 96px;
-  height: 96px;
-  object-fit: contain;
-}
-
-.placeholder .beeFlight {
-  position: absolute;
-  right: -16px;
-  top: 8px;
-  width: 152px;
+.reportImage {
+  display: block;
+  width: 100%;
   height: auto;
-  opacity: 0.9;
+  object-fit: contain;
 }
 
 .sendButton {
@@ -102,13 +69,6 @@
   font-weight: 800;
   box-shadow: 0 10px 20px rgba(104, 204, 203, 0.22);
   cursor: pointer;
-}
-
-.shareHint {
-  margin: 12px 0 0;
-  color: #6f6859;
-  font-size: 12px;
-  line-height: 1.45;
 }
 
 .successPage {

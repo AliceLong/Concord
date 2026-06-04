@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Concord Demo",
-  description: "Home -> Report 的最小语音记录验证流程"
+  description: "Home -> Report 的最小語音記錄驗證流程"
 };
 
 export default function RootLayout({

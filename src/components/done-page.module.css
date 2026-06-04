@@ -10,9 +10,9 @@
   background: #eefdff;
 }
 
-.wrapper > img {
-  width: 125px;
-  height: 125px;
+.transitionGif {
+  width: 180px;
+  height: 180px;
   object-fit: contain;
 }
 

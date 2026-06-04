@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, ClipboardCheck, UserRound } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { DemoCareTask } from "@/lib/demo-data";
 import type { ElderlyProfile } from "@/types/elderly";
 import styles from "@/components/home-task-dashboard.module.css";
@@ -40,24 +40,23 @@ function formatOverdueLabel(dueAt: string): { label: string; tone: "overdue" | "
   }
 
   if (diffMs <= 4 * 36e5) {
-    return { label: `逾期剩余${Math.max(diffHours, 1)}h`, tone: "soon" };
+    return { label: `逾期剩餘${Math.max(diffHours, 1)}h`, tone: "soon" };
   }
 
   return { label: "待完成", tone: "normal" };
 }
 
-function completionKey(taskId: string): string {
-  return `care-task-completed:${taskId}`;
-}
+const DEFAULT_TODAY_TASK_ID = "task-chan-noon";
+const DEMO_SHOW_ACHIEVEMENT_KEY = "demo:show-achievement";
 
 const elderAvatarSrcByKey: Record<string, string> = {
   sunflower: "/assets/profile/向日葵 icon.svg",
-  daisy: "/assets/profile/小雏菊 icon.svg",
-  sakura: "/assets/profile/樱花 icon.svg",
+  daisy: "/assets/profile/小雛菊 icon.svg",
+  sakura: "/assets/profile/櫻花 icon.svg",
   peony: "/assets/profile/牡丹 icon.svg",
   lavender: "/assets/profile/薰衣草 icon.svg",
-  tulip: "/assets/profile/郁金香 icon.svg",
-  calla: "/assets/profile/马蹄莲 icon.svg"
+  tulip: "/assets/profile/鬱金香 icon.svg",
+  calla: "/assets/profile/馬蹄蓮 icon.svg"
 };
 
 function getElderAvatarSrc(elder: ElderlyProfile): string {
@@ -69,8 +68,7 @@ function getElderAvatarSrc(elder: ElderlyProfile): string {
 }
 
 export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
-  const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
-  const [showFirstAchievement, setShowFirstAchievement] = useState(false);
+  const [showAchievement, setShowAchievement] = useState(false);
   const [selectedDateIndex, setSelectedDateIndex] = useState(3);
   const weekDays = useMemo(
     () => ["五", "六", "日", "一", "二", "三", "四"].map((day, index) => ({ day, date: 18 + index })),
@@ -78,21 +76,17 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
   );
 
   useEffect(() => {
-    const completed = tasks
-      .filter((task) => window.localStorage.getItem(completionKey(task.id)) === "1")
-      .map((task) => task.id);
+    window.localStorage.removeItem("demo:today-completed");
+    window.localStorage.removeItem("demo:last-completed-task-id");
+    window.localStorage.removeItem("demo:completed-at");
+    tasks.forEach((task) => window.localStorage.removeItem(`care-task-completed:${task.id}`));
 
-    setCompletedTaskIds(completed);
-
-    setShowFirstAchievement(
-      window.localStorage.getItem("achievement:first-report-completed") === "1" &&
-        window.localStorage.getItem("achievement:first-report-seen") !== "1"
-    );
+    setShowAchievement(window.localStorage.getItem(DEMO_SHOW_ACHIEVEMENT_KEY) === "1");
   }, [tasks]);
 
   function handleCloseAchievement() {
-    window.localStorage.setItem("achievement:first-report-seen", "1");
-    setShowFirstAchievement(false);
+    window.localStorage.removeItem(DEMO_SHOW_ACHIEVEMENT_KEY);
+    setShowAchievement(false);
   }
 
   const taskItems = useMemo<TaskItem[]>(
@@ -107,17 +101,16 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
     [elders, tasks]
   );
 
-  const activeTasks = taskItems.filter((item) => !completedTaskIds.includes(item.task.id));
-  const todayTasks = activeTasks.filter((item) => item.status.tone === "normal");
-  const unfinishedTasks = activeTasks.filter((item) => item.status.tone !== "normal");
-  const completedTasks = taskItems.filter((item) => completedTaskIds.includes(item.task.id));
+  const defaultTodayTask = taskItems.find((item) => item.task.id === DEFAULT_TODAY_TASK_ID) ?? taskItems[0] ?? null;
+  const todayTask = defaultTodayTask;
+  const unfinishedTasks = taskItems.filter((item) => item.task.id !== DEFAULT_TODAY_TASK_ID);
 
   return (
     <section className={styles.dashboard}>
       <header className={styles.hero}>
         <div>
-          <p className={styles.greeting}>早晨，Doris!</p>
-          <div className={styles.weekRow} aria-label="本周日期">
+          <p className={styles.greeting}>早晨，Joey!</p>
+          <div className={styles.weekRow} aria-label="本週日期">
             {weekDays.map(({ day, date }, index) => (
               <button
                 key={`${day}-${date}`}
@@ -125,7 +118,7 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
                 className={index === selectedDateIndex ? styles.dayActive : styles.day}
                 onClick={() => setSelectedDateIndex(index)}
                 aria-pressed={index === selectedDateIndex}
-                aria-label={`选择 ${date} 日，星期${day}`}
+                aria-label={`選擇 ${date} 日，星期${day}`}
               >
                 <small>{day}</small>
                 <strong>{date}</strong>
@@ -133,62 +126,37 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
             ))}
           </div>
         </div>
-        <span className={styles.summaryBadge}>
-          <ClipboardCheck size={16} />
-          {activeTasks.length} 项待处理
-        </span>
       </header>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>今日的任务</h2>
+        <h2 className={styles.sectionTitle}>今日的任務</h2>
         <div className={styles.primaryList}>
-          {todayTasks.length ? (
-            todayTasks.map(({ task, elder }) => (
-              <Link key={task.id} className={styles.taskCard} href={`/report/${elder.id}/modules?taskId=${task.id}`}>
-                <div className={styles.avatar}>
-                  <Image src={getElderAvatarSrc(elder)} alt="" width={76} height={76} />
+          {todayTask ? (
+            <Link
+              key={todayTask.task.id}
+              className={styles.taskCard}
+              href={`/report/${todayTask.elder.id}/modules?taskId=${todayTask.task.id}`}
+            >
+              <div className={styles.avatar}>
+                <Image src={getElderAvatarSrc(todayTask.elder)} alt="" width={76} height={76} />
+              </div>
+              <div className={styles.taskMain}>
+                <div className={styles.taskTop}>
+                  <h3>{todayTask.elder.fullName}</h3>
+                  <span>單號: {todayTask.elder.orderNo ?? todayTask.elder.roomNo}</span>
                 </div>
-                <div className={styles.taskMain}>
-                  <div className={styles.taskTop}>
-                    <h3>{elder.fullName}</h3>
-                    <span>单号: {elder.orderNo ?? elder.roomNo}</span>
-                  </div>
-                  <p>{formatTime(task.scheduledAt)}</p>
-                </div>
-                <ArrowRight size={18} />
-              </Link>
-            ))
+                <p>{formatTime(todayTask.task.scheduledAt)}</p>
+              </div>
+              <ArrowRight size={18} />
+            </Link>
           ) : (
-            <div className={styles.emptyCard}>
-              <UserRound size={18} />
-              今日任务已完成
-            </div>
+            <div className={styles.emptyCard}>暫無今日任務</div>
           )}
         </div>
       </section>
 
-      {completedTasks.length ? (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>已完成</h2>
-          <div className={styles.secondaryList}>
-            {completedTasks.map(({ task, elder }) => (
-              <Link key={task.id} className={styles.miniCard} href={`/report/${elder.id}/modules?taskId=${task.id}`}>
-                <div className={styles.miniAvatar}>
-                  <Image src={getElderAvatarSrc(elder)} alt="" width={64} height={64} />
-                </div>
-                <div className={styles.miniMain}>
-                  <strong>{elder.fullName}</strong>
-                  <span>{formatTime(task.scheduledAt)}</span>
-                </div>
-                <span className={styles.completedPill}>已完成</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>未完成事项</h2>
+        <h2 className={styles.sectionTitle}>未完成事項</h2>
         <div className={styles.secondaryList}>
           {unfinishedTasks.map(({ task, elder, status }) => (
             <Link key={task.id} className={styles.miniCard} href={`/report/${elder.id}/modules?taskId=${task.id}`}>
@@ -200,20 +168,20 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
                 <span>{status.label}</span>
               </div>
               <span className={status.tone === "overdue" ? styles.overduePill : styles.soonPill}>
-                {status.tone === "overdue" ? "已逾期" : "即将逾期"}
+                {status.tone === "overdue" ? "已逾期" : "即將逾期"}
               </span>
             </Link>
           ))}
-          {!unfinishedTasks.length ? <div className={styles.emptyCard}>暂无未完成事项</div> : null}
+          {!unfinishedTasks.length ? <div className={styles.emptyCard}>暫無未完成事項</div> : null}
         </div>
       </section>
 
-      {showFirstAchievement ? (
+      {showAchievement ? (
         <div className={styles.achievementOverlay} role="dialog" aria-modal="true" aria-labelledby="first-achievement-title">
           <div className={styles.achievementDialog}>
             <div className={styles.speechWrap}>
               <Image className={styles.speechBubble} src="/assets/images/speech-bubble.svg" alt="" width={240} height={137} />
-              <p id="first-achievement-title">恭喜你完成第一次记录任务!</p>
+              <p id="first-achievement-title">恭喜你完成第一次記錄任務!</p>
             </div>
 
             <div className={styles.gifWrap}>
@@ -228,7 +196,7 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
             </div>
 
             <div className={styles.achievementCard}>
-              <p className={styles.achievementText}>可以去我的查看勋章获得情况哦</p>
+              <p className={styles.achievementText}>可以去我的查看勳章獲得情況哦</p>
               <button type="button" onClick={handleCloseAchievement}>
                 知道啦
               </button>
@@ -237,14 +205,14 @@ export function HomeTaskDashboard({ tasks, elders }: HomeTaskDashboardProps) {
         </div>
       ) : null}
 
-      <nav className={styles.bottomNav} aria-label="主导航">
+      <nav className={styles.bottomNav} aria-label="主導航">
         <Link className={styles.navActive} href="/">
           <Image className={styles.navIcon} src="/assets/icons/home_selected.svg" alt="" width={24} height={24} />
-          首页
+          首頁
         </Link>
         <Link href="/attendance-reports">
           <Image className={styles.navIcon} src="/assets/icons/report.svg" alt="" width={24} height={24} />
-          报告
+          報告
         </Link>
         <Link href="/profile">
           <Image className={styles.navIcon} src="/assets/icons/me.svg" alt="" width={24} height={24} />

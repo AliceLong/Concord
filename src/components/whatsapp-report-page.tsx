@@ -17,7 +17,7 @@ interface WhatsAppReportPageProps {
 
 function buildWhatsAppSummary(report: GeneratedReport | null, elder: ElderlyProfile): string {
   if (!report) {
-    return `${elder.fullName} 今日服务记录已完成，详情请查看护理报告。`;
+    return `${elder.fullName} 今日服務記錄已完成，詳情請查看護理報告。`;
   }
 
   const moduleSummary = report.moduleReports
@@ -29,10 +29,10 @@ function buildWhatsAppSummary(report: GeneratedReport | null, elder: ElderlyProf
     .join("。");
 
   return [
-    `${elder.fullName} 今日已完成服务记录。`,
-    report.elderStatus.statusTags.length ? `观察到：${report.elderStatus.statusTags.join("、")}。` : "",
+    `${elder.fullName} 今日已完成服務記錄。`,
+    report.elderStatus.statusTags.length ? `觀察到：${report.elderStatus.statusTags.join("、")}。` : "",
     moduleSummary,
-    report.summaryAndRemarks.recommendation ? `后续建议：${report.summaryAndRemarks.recommendation}` : ""
+    report.summaryAndRemarks.recommendation ? `後續建議：${report.summaryAndRemarks.recommendation}` : ""
   ]
     .filter(Boolean)
     .join("\n");
@@ -78,7 +78,7 @@ export function WhatsAppReportPage({ elder, taskId, selectedModules }: WhatsAppR
   return (
     <section className={styles.wrapper}>
       <div className={styles.uploadBlock}>
-        <h2>上传图片</h2>
+        <h2>上傳圖片</h2>
         <label className={styles.uploadBox}>
           <Image src="/assets/images/image-gallery-placeholder.svg" alt="" width={64} height={64} />
           <input
@@ -91,32 +91,32 @@ export function WhatsAppReportPage({ elder, taskId, selectedModules }: WhatsAppR
           />
         </label>
         {imageNames.length ? <p className={styles.imageNames}>{imageNames.join("、")}</p> : null}
-        <p className={styles.uploadHint}>图片会在此页预览文件名；WhatsApp 打开后请在聊天窗口中手动附加图片。</p>
+        <p className={styles.uploadHint}>圖片會在此頁預覽文件名；WhatsApp 打開後請在聊天窗口中手動附加圖片。</p>
       </div>
 
       <div className={styles.messageBlock}>
-        <h2>修饰后报告</h2>
+        <h2>修飾後報告</h2>
         <textarea value={message} onChange={(event) => setMessage(event.target.value)} />
       </div>
 
       {hasOpenedWhatsApp ? (
         <div className={styles.confirmPanel}>
-          <p>已打开 WhatsApp。请在 WhatsApp 中选择联系人，确认报告文字已带入输入框后手动发送。</p>
-          {imageNames.length ? <p>如需发送图片，请在 WhatsApp 中手动附加刚才选择的图片。</p> : null}
+          <p>已打開 WhatsApp。請在 WhatsApp 中選擇聯繫人，確認報告文字已帶入輸入框後手動發送。</p>
+          {imageNames.length ? <p>如需發送圖片，請在 WhatsApp 中手動附加剛才選擇的圖片。</p> : null}
         </div>
       ) : null}
 
       <div className={styles.bottomActions}>
         <button className={styles.sendButton} type="button" onClick={handleOpenWhatsApp} disabled={!message.trim()}>
-          {hasOpenedWhatsApp ? "重新打开 WhatsApp" : "发送至 WhatsApp"}
+          {hasOpenedWhatsApp ? "重新打開 WhatsApp" : "發送至 WhatsApp"}
         </button>
         <button
           className={hasOpenedWhatsApp ? styles.confirmButton : styles.nextButton}
           type="button"
           onClick={hasOpenedWhatsApp ? handleConfirmSent : undefined}
           disabled={!hasOpenedWhatsApp}
-          aria-label={hasOpenedWhatsApp ? "我已发送" : "请先打开 WhatsApp"}
-          title={hasOpenedWhatsApp ? "我已发送" : "请先打开 WhatsApp"}
+          aria-label={hasOpenedWhatsApp ? "我已發送" : "請先打開 WhatsApp"}
+          title={hasOpenedWhatsApp ? "我已發送" : "請先打開 WhatsApp"}
         >
           <Image
             src={hasOpenedWhatsApp ? "/assets/icons/icon-check.svg" : "/assets/icons/icon-arrow-circle-right.svg"}

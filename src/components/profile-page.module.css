@@ -89,24 +89,42 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 24px 18px;
   margin-top: 20px;
-  padding: 34px 28px;
+  padding: 28px 26px;
   border: 1px solid rgba(225, 198, 104, 0.26);
   border-radius: 18px;
   background: rgba(255, 248, 218, 0.54);
 }
 
-.badgeCard,
-.lockedBadge {
+.badgeCard {
   display: grid;
   place-items: center;
-  min-height: 102px;
+  min-height: 112px;
+  border-radius: 14px;
+  text-decoration: none;
+  transition:
+    transform 140ms ease,
+    opacity 140ms ease;
 }
 
 .badgeCard img {
   display: block;
-  width: 72px;
-  height: 96px;
+  width: 76px;
+  height: 114px;
   object-fit: contain;
+}
+
+.badgeCard:active {
+  transform: scale(0.96);
+}
+
+.badgeCard:hover {
+  opacity: 0.86;
+}
+
+.lockedBadge {
+  display: grid;
+  place-items: center;
+  min-height: 102px;
 }
 
 .lockShape {

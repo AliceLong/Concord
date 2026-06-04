@@ -23,13 +23,13 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
 
   if (!text) {
-    throw new Error("服务端返回了空响应。");
+    throw new Error("服務端返回了空響應。");
   }
 
   try {
     return JSON.parse(text) as T;
   } catch {
-    throw new Error(`服务端返回了非 JSON 响应：${text.slice(0, 200)}`);
+    throw new Error(`服務端返回了非 JSON 響應：${text.slice(0, 200)}`);
   }
 }
 
@@ -123,10 +123,10 @@ export function useSpeechmaticsRecorder({
     }
 
     const firstLatencyMs = firstTranscriptAtRef.current - startedAt;
-    const parts = [`首条转写 ${firstLatencyMs}ms`];
+    const parts = [`首條轉寫 ${firstLatencyMs}ms`];
 
     if (finalized) {
-      parts.push(`最终定稿 ${now - startedAt}ms`);
+      parts.push(`最終定稿 ${now - startedAt}ms`);
     }
 
     setLatencyLabel(parts.join(" · "));
@@ -164,7 +164,7 @@ export function useSpeechmaticsRecorder({
     }
 
     if (message.message === "Error") {
-      onErrorRef.current?.(message.reason || "语音转写失败");
+      onErrorRef.current?.(message.reason || "語音轉寫失敗");
       setIsPending(false);
       closeSpeechmaticsClient();
     }
@@ -175,7 +175,7 @@ export function useSpeechmaticsRecorder({
     const payload = await readJsonResponse<SpeechmaticsTokenResponse & { error?: string }>(response);
 
     if (!response.ok || !payload.token) {
-      throw new Error(payload.error ?? "获取 Speechmatics token 失败。");
+      throw new Error(payload.error ?? "獲取 Speechmatics token 失敗。");
     }
 
     const client = new RealtimeClient({
@@ -245,7 +245,7 @@ export function useSpeechmaticsRecorder({
     ) {
       setIsSupported(false);
       setIsStarting(false);
-      onErrorRef.current?.("当前浏览器不支持低延迟录音，请改用最新版 Chrome。");
+      onErrorRef.current?.("當前瀏覽器不支持低延遲錄音，請改用最新版 Chrome。");
       return;
     }
 
@@ -317,7 +317,7 @@ export function useSpeechmaticsRecorder({
       setIsStarting(false);
       setIsPending(false);
       setIsRecording(false);
-      onErrorRef.current?.(currentError instanceof Error ? currentError.message : "录音启动失败");
+      onErrorRef.current?.(currentError instanceof Error ? currentError.message : "錄音啟動失敗");
     }
   }
 
@@ -332,7 +332,7 @@ export function useSpeechmaticsRecorder({
 
     flushPcmFrames(true);
     void speechmaticsClientRef.current.stopRecognition().catch((currentError: unknown) => {
-      onErrorRef.current?.(currentError instanceof Error ? currentError.message : "结束实时转写失败");
+      onErrorRef.current?.(currentError instanceof Error ? currentError.message : "結束實時轉寫失敗");
       setIsPending(false);
       closeSpeechmaticsClient();
     });

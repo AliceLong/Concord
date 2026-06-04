@@ -21,18 +21,18 @@ export const GOOGLE_FORM_HEADERS = [
   "有無提供B1.2 認知訓練 - 針對認知及記憶練習?",
   " [1.0 現實導向: 分享簡短新聞/ 資訊, 亦可按長者有興趣傾談的內容, 引導長者分享心得或睇法（5 分鐘）]",
   " [1.1 現實導向: 問長者今日是幾年、幾月 、幾日、星期幾、什麼季節 、 時間、地點、地區（1~2 次）（第2次可以在運動後做）]",
-  " [2.0 短期記憶: 以圖片或實物顯示三樣不同类別的物件， 請長者重複說出2次， 做完下面第4項(约5~10 分鐘後), 再問長者是否記得三樣物件是什麼?]",
+  " [2.0 短期記憶: 以圖片或實物顯示三樣不同類別的物件， 請長者重複說出2次， 做完下面第4項(約5~10 分鐘後), 再問長者是否記得三樣物件是什麼?]",
   " [2.1 短期記憶: 請長者記住相同啤牌的位置，反轉啤牌, 然後請長者揭開相同NO. 的啤牌.]",
-  " [3.0  懷緬治療: 顯示長者後生时的日常物品/香港地標/ 明星/或播放懷舊歌曲（ 可參考 附件二B, C, E), 請長者講出並引導長者分享以上人、事 、物（ 5至10分鐘）]",
-  " [4.0 問長者還記得2.0的三件物件是什麼 ， 並請長者讀出]",
-  " [5.1 說話流暢度: 請長者說出十種蔬菜/小食/國家/酒樓點心/港鐵站/地區/廚房物品/廁所物品（亦可因应長者熟悉或喜歡的物品) （1～2題）]",
+  " [3.0  懷緬治療: 顯示長者後生時的日常物品/香港地標/ 明星/或播放懷舊歌曲（ 可參考 附件二B, C, E), 請長者講出並引導長者分享以上人、事 、物（ 5至10分鐘）]",
+  " [4.0 問長者三樣物品: 問長者是否還記得2.0的三樣物品是什麼 ， 並請長者讀出]",
+  " [5.1 說話流暢度: 請長者說出十種蔬菜/小食/國家/酒樓點心/港鐵站/地區/廚房物品/廁所物品（亦可因應長者熟悉或喜歡的物品) （1～2題）]",
   " [5.2 說話流暢度: 耆恩大使先讀語句(附件三), 然後請長者跟你讀一次]",
   " [6.0 運算: 問長者5～8題加減數 (加減題各半, 或可用啤牌、骰子或想像到街市買餸找續, 但切忌用真錢) (參附件三)]",
-  " [7.1 聯想訓練: 向長者說出一個2~3 個字的詞語 ,然後請長者接龍(eg. 深水埗=> 補衫=> 三楼.... )(做2~3次,每次用不同的詞語來開始)]",
+  " [7.1 聯想訓練: 向長者說出一個2~3 個字的詞語 ,然後請長者接龍(eg. 深水埗=> 補衫=> 三樓.... )(做2~3次,每次用不同的詞語來開始)]",
   " [7.2 聯想訓練: 以不直接說出答案任何一個字為原則用各種語音提示引導長者說出答案( 參附件二G) (玩1-2個)]",
-  " [8.1 聽觉/專注力訓練: 依附件二F,耆恩大使慢慢出5-8組數字, 請長者以順序或倒序讀出]",
-  " [8.2 聽觉/專注力訓練: 幻想在酒樓或餐廳, 請長者記住你點的餐, eg. 「唔該我想要兩壺茶、 一籠蝦餃 一籠鹹水角」「 一碗麥皮, 一件餐蛋治, 一杯熱檸水」]",
-  " [8.3 聽觉/專注力訓練: 請長者說出兩幅圖有何不同之處(於google輸入「找不同遊戲」)]",
+  " [8.1 聽覺/專注力訓練: 依附件二F,耆恩大使慢慢出5-8組數字, 請長者以順序或倒序讀出]",
+  " [8.2 聽覺/專注力訓練: 幻想在酒樓或餐廳, 請長者記住你點的餐, eg. 「唔該我想要兩壺茶、 一籠蝦餃 一籠鹹水角」「 一碗麥皮, 一件餐蛋治, 一杯熱檸水」]",
+  " [8.3 聽覺/專注力訓練: 請長者說出兩幅圖有何不同之處(於google輸入「找不同遊戲」)]",
   "沒有進行或未能完成以上認知訓練的原因: ",
   "有無提供以下服務?\n    B1.1 耆力運動 \n    B1.3 防跌運動",
   "拉筋運動 [頸部]",
@@ -82,7 +82,7 @@ function normalizeChoiceValue(value: string | null | undefined, fallback = ""): 
     return fallback;
   }
 
-  if (value === "无") {
+  if (value === "無") {
     return "沒有";
   }
 
@@ -94,7 +94,7 @@ function looksLikeCompletionReason(value: string | null | undefined): boolean {
     return false;
   }
 
-  return /(未完成|未能|不足|不適|不适|拒絕|拒绝|時間不足|时间不足|中止|暫停|暂停)/u.test(value);
+  return /(未完成|未能|不足|不適|不適|拒絕|拒絕|時間不足|時間不足|中止|暫停|暫停)/u.test(value);
 }
 
 function collectModuleRemarks(moduleReports: ModuleReportItem[], moduleIds: string[]) {
@@ -144,7 +144,7 @@ function buildGoogleFormRow(elder: ElderlyProfile, report: GeneratedReport): unk
   const cognitiveReason = collectModuleRemarks(report.moduleReports, cognitiveModuleIds);
   const motionReason = cleanDraftValue(report.formDraft.motionTrainingReason);
   const environmentStatus =
-    normalizeChoiceValue(report.formDraft.environmentIssue, report.summaryAndRemarks.incident && report.summaryAndRemarks.incident !== "无" ? report.summaryAndRemarks.incident : "沒有");
+    normalizeChoiceValue(report.formDraft.environmentIssue, report.summaryAndRemarks.incident && report.summaryAndRemarks.incident !== "無" ? report.summaryAndRemarks.incident : "沒有");
   const basicServices =
     cleanDraftValue(report.formDraft.basicServices) || report.completedServices.serviceItems.join(", ");
   const basicServiceReason = looksLikeCompletionReason(report.formDraft.basicServiceReason)

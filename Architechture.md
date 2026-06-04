@@ -1,150 +1,150 @@
-你的项目是一个 **Next.js 全栈项目**：前端和后端在同一个代码仓库里，不是传统的“前端一个项目、后端一个项目”分离结构。
+你的項目是一個 **Next.js 全棧項目**：前端和後端在同一個代碼倉庫裡，不是傳統的“前端一個項目、後端一個項目”分離結構。
 
-整体可以这样看：
+整體可以這樣看：
 
 ```txt
 Concord
-├─ server.mjs                         # 自定义 Node/Next 启动入口
+├─ server.mjs                         # 自定義 Node/Next 啟動入口
 ├─ server/
-│  └─ asr-websocket.mjs               # Google ASR WebSocket 实时转写服务
+│  └─ asr-websocket.mjs               # Google ASR WebSocket 實時轉寫服務
 ├─ src/
-│  ├─ app/                            # Next.js App Router：页面 + API
-│  │  ├─ page.tsx                     # 首页：选择长者
-│  │  ├─ report/[id]/page.tsx         # 报告页面：某个长者的录音/报告页
-│  │  ├─ api/                         # 后端 HTTP API
-│  │  │  ├─ report/route.ts           # 生成护理报告 API
-│  │  │  ├─ asr/route.ts              # 上传音频转文字 API
-│  │  │  ├─ speechmatics/token/route.ts # 获取 Speechmatics 实时转写 token
-│  │  │  └─ health/google/route.ts    # Google 配置健康检查
-│  │  └─ *.css                        # 页面样式
-│  ├─ components/                     # 前端组件
-│  │  └─ report-session.tsx           # 录音、实时转写、生成报告的主要交互组件
-│  ├─ lib/                            # 通用逻辑/第三方服务封装
-│  │  ├─ asr-client.ts                # Google Speech-to-Text 普通音频转写
-│  │  ├─ speechmatics.ts              # Speechmatics token/config 封装
-│  │  ├─ google-client.ts             # Google Speech/Gemini 客户端
-│  │  ├─ report-ai.ts                 # 调 Gemini 生成结构化报告
-│  │  ├─ report-builder.ts            # 无 Google 配置时的本地规则报告生成
-│  │  └─ demo-data.ts                 # 示例长者数据
-│  ├─ server/                         # 后端业务层
-│  │  ├─ services/                    # 服务逻辑
-│  │  └─ repositories/                # 数据读取逻辑
-│  └─ types/                          # TypeScript 类型定义
+│  ├─ app/                            # Next.js App Router：頁面 + API
+│  │  ├─ page.tsx                     # 首頁：選擇長者
+│  │  ├─ report/[id]/page.tsx         # 報告頁面：某個長者的錄音/報告頁
+│  │  ├─ api/                         # 後端 HTTP API
+│  │  │  ├─ report/route.ts           # 生成護理報告 API
+│  │  │  ├─ asr/route.ts              # 上傳音頻轉文字 API
+│  │  │  ├─ speechmatics/token/route.ts # 獲取 Speechmatics 實時轉寫 token
+│  │  │  └─ health/google/route.ts    # Google 配置健康檢查
+│  │  └─ *.css                        # 頁面樣式
+│  ├─ components/                     # 前端組件
+│  │  └─ report-session.tsx           # 錄音、實時轉寫、生成報告的主要交互組件
+│  ├─ lib/                            # 通用邏輯/第三方服務封裝
+│  │  ├─ asr-client.ts                # Google Speech-to-Text 普通音頻轉寫
+│  │  ├─ speechmatics.ts              # Speechmatics token/config 封裝
+│  │  ├─ google-client.ts             # Google Speech/Gemini 客戶端
+│  │  ├─ report-ai.ts                 # 調 Gemini 生成結構化報告
+│  │  ├─ report-builder.ts            # 無 Google 配置時的本地規則報告生成
+│  │  └─ demo-data.ts                 # 示例長者數據
+│  ├─ server/                         # 後端業務層
+│  │  ├─ services/                    # 服務邏輯
+│  │  └─ repositories/                # 數據讀取邏輯
+│  └─ types/                          # TypeScript 類型定義
 └─ public/
-   └─ audio-worklet-recorder.js       # 浏览器录音 AudioWorklet
+   └─ audio-worklet-recorder.js       # 瀏覽器錄音 AudioWorklet
 ```
 
-**前端结构**
+**前端結構**
 
-前端主要在这几块：
+前端主要在這幾塊：
 
 - [src/app/page.tsx](/Users/alicelong/Desktop/Concord/src/app/page.tsx)  
-  首页，显示长者列表。点击某个长者后进入 `/report/[id]`。
+  首頁，顯示長者列表。點擊某個長者後進入 `/report/[id]`。
 
 - [src/app/report/[id]/page.tsx](/Users/alicelong/Desktop/Concord/src/app/report/[id]/page.tsx)  
-  某个长者的报告页面。它先根据 URL 里的 `id` 找长者资料，然后渲染 `ReportSession`。
+  某個長者的報告頁面。它先根據 URL 裡的 `id` 找長者資料，然後渲染 `ReportSession`。
 
 - [src/components/report-session.tsx](/Users/alicelong/Desktop/Concord/src/components/report-session.tsx)  
-  这是核心前端交互组件，负责：
-  - 调用浏览器麦克风
-  - 使用 `AudioWorklet` 处理音频
-  - 连接 Speechmatics 实时转写
-  - 把转写文字显示在 textarea
-  - 调 `/api/report` 生成结构化报告
-  - 展示生成后的 JSON 和报告文本
+  這是核心前端交互組件，負責：
+  - 調用瀏覽器麥克風
+  - 使用 `AudioWorklet` 處理音頻
+  - 連接 Speechmatics 實時轉寫
+  - 把轉寫文字顯示在 textarea
+  - 調 `/api/report` 生成結構化報告
+  - 展示生成後的 JSON 和報告文本
 
 - CSS module 文件  
-  比如 `page.module.css`、`report-session.module.css`，负责页面和组件样式。
+  比如 `page.module.css`、`report-session.module.css`，負責頁面和組件樣式。
 
-这里有一个重点：  
-`page.tsx` 和 `report/[id]/page.tsx` 默认是 **Server Component**，而 `report-session.tsx` 顶部有 `"use client"`，所以它是 **Client Component**，浏览器录音、状态更新、按钮点击都在这里做。
+這裡有一個重點：  
+`page.tsx` 和 `report/[id]/page.tsx` 默認是 **Server Component**，而 `report-session.tsx` 頂部有 `"use client"`，所以它是 **Client Component**，瀏覽器錄音、狀態更新、按鈕點擊都在這裡做。
 
-**后端结构**
+**後端結構**
 
-后端主要分成四层：
+後端主要分成四層：
 
-1. 启动层
+1. 啟動層
 
 [server.mjs](/Users/alicelong/Desktop/Concord/server.mjs)
 
-它负责启动整个 Next.js 应用，并额外挂载 `/ws/asr` WebSocket 服务。
+它負責啟動整個 Next.js 應用，並額外掛載 `/ws/asr` WebSocket 服務。
 
-2. API 路由层
+2. API 路由層
 
-这些是浏览器可以通过 `fetch()` 调用的接口：
+這些是瀏覽器可以通過 `fetch()` 調用的接口：
 
 - [src/app/api/report/route.ts](/Users/alicelong/Desktop/Concord/src/app/api/report/route.ts)  
-  接收转写文本，生成护理报告。
+  接收轉寫文本，生成護理報告。
 
 - [src/app/api/asr/route.ts](/Users/alicelong/Desktop/Concord/src/app/api/asr/route.ts)  
-  接收上传音频文件，调用 Google Speech-to-Text 转文字。
+  接收上傳音頻文件，調用 Google Speech-to-Text 轉文字。
 
 - `src/app/api/speechmatics/token/route.ts`  
-  给前端实时转写生成 Speechmatics token。当前 `ReportSession` 主要用的是这个接口。
+  給前端實時轉寫生成 Speechmatics token。當前 `ReportSession` 主要用的是這個接口。
 
 - [src/app/api/health/google/route.ts](/Users/alicelong/Desktop/Concord/src/app/api/health/google/route.ts)  
-  检查 Google Cloud / Speech / Gemini 配置是否正常。
+  檢查 Google Cloud / Speech / Gemini 配置是否正常。
 
-3. 业务服务层
+3. 業務服務層
 
 - [src/server/services/asr.ts](/Users/alicelong/Desktop/Concord/src/server/services/asr.ts)  
-  包装音频转写逻辑。
+  包裝音頻轉寫邏輯。
 
 - [src/server/services/report.ts](/Users/alicelong/Desktop/Concord/src/server/services/report.ts)  
-  根据长者 ID 和转写文本生成报告。
+  根據長者 ID 和轉寫文本生成報告。
 
 - [src/server/repositories/elder.ts](/Users/alicelong/Desktop/Concord/src/server/repositories/elder.ts)  
-  读取长者资料。目前是从 demo data 里读，不是真数据库。
+  讀取長者資料。目前是從 demo data 裡讀，不是真數據庫。
 
-4. 第三方服务封装层
+4. 第三方服務封裝層
 
 - [src/lib/google-client.ts](/Users/alicelong/Desktop/Concord/src/lib/google-client.ts)  
-  初始化 Google Speech 和 Gemini 客户端。
+  初始化 Google Speech 和 Gemini 客戶端。
 
 - [src/lib/asr-client.ts](/Users/alicelong/Desktop/Concord/src/lib/asr-client.ts)  
-  调 Google Speech-to-Text，把音频文件转文字。
+  調 Google Speech-to-Text，把音頻文件轉文字。
 
 - `src/lib/speechmatics.ts`  
-  生成 Speechmatics 实时转写 token。
+  生成 Speechmatics 實時轉寫 token。
 
 - [src/lib/report-ai.ts](/Users/alicelong/Desktop/Concord/src/lib/report-ai.ts)  
-  调 Gemini，根据转写文本生成结构化护理报告。
+  調 Gemini，根據轉寫文本生成結構化護理報告。
 
 - [src/lib/report-builder.ts](/Users/alicelong/Desktop/Concord/src/lib/report-builder.ts)  
-  如果 Google 配置不存在，就用本地规则生成一个报告。
+  如果 Google 配置不存在，就用本地規則生成一個報告。
 
-**当前主要数据流**
+**當前主要數據流**
 
-现在核心流程大概是：
+現在核心流程大概是：
 
 ```txt
-用户打开首页
+用戶打開首頁
   ↓
-src/app/page.tsx 读取 demo 长者列表
+src/app/page.tsx 讀取 demo 長者列表
   ↓
-点击长者
+點擊長者
   ↓
-src/app/report/[id]/page.tsx 读取长者资料
+src/app/report/[id]/page.tsx 讀取長者資料
   ↓
-ReportSession 在浏览器启动录音
+ReportSession 在瀏覽器啟動錄音
   ↓
-前端调用 /api/speechmatics/token
+前端調用 /api/speechmatics/token
   ↓
-前端直接连接 Speechmatics 实时转写
+前端直接連接 Speechmatics 實時轉寫
   ↓
-转写文本进入 textarea
+轉寫文本進入 textarea
   ↓
-点击“生成报告”
+點擊“生成報告”
   ↓
 前端 POST /api/report
   ↓
 src/server/services/report.ts
   ↓
-src/lib/report-ai.ts 调 Gemini 或 fallback 到 report-builder
+src/lib/report-ai.ts 調 Gemini 或 fallback 到 report-builder
   ↓
-返回结构化报告给前端展示
+返回結構化報告給前端展示
 ```
 
-所以一句话总结：
+所以一句話總結：
 
-你的项目前端在 `src/app` 和 `src/components`，后端在 `server.mjs`、`src/app/api`、`src/server` 和部分 `src/lib` 里。它是一个 Next.js 全栈应用，前后端没有拆成两个独立项目。
+你的項目前端在 `src/app` 和 `src/components`，後端在 `server.mjs`、`src/app/api`、`src/server` 和部分 `src/lib` 裡。它是一個 Next.js 全棧應用，前後端沒有拆成兩個獨立項目。

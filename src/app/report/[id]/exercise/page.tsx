@@ -38,14 +38,14 @@ export default async function ExerciseRoute({
             <Image src="/assets/icons/icon-back.svg" alt="" width={32} height={32} />
           </Link>
           <div className={styles.headerMain}>
-            <h1 className={styles.title}>语音录入</h1>
-            <div className={styles.progress} aria-label="流程进度：第1步语音录入">
+            <h1 className={styles.title}>語音錄入</h1>
+            <div className={styles.progress} aria-label="流程進度：第1步語音錄入">
               <span className={styles.progressActive} />
               <span />
               <span />
             </div>
           </div>
-          <Link href="/" className={styles.closeButton} aria-label="关闭">
+          <Link href="/" className={styles.closeButton} aria-label="關閉">
             <Image src="/assets/icons/icon-close.svg" alt="" width={24} height={24} />
           </Link>
         </div>
