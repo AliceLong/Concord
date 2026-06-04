@@ -42,7 +42,7 @@ export function AttendanceReportListPage() {
             <span>服務日期</span>
             <strong>{currentReport.month}</strong>
           </div>
-          <span className={styles.featureName}>Doris</span>
+          <span className={styles.featureName}>Joey</span>
           <span className={styles.chevron} aria-hidden="true" />
         </div>
       </Link>
@@ -69,7 +69,7 @@ export function AttendanceReportListPage() {
         {reportRows.map((report) => (
           <Link key={report.id} className={styles.row} href={`/attendance-reports/${report.id}`}>
             <span>服務日期&nbsp;&nbsp;{report.month}</span>
-            <strong>Doris</strong>
+            <strong>Joey</strong>
             <span className={styles.rowChevron} aria-hidden="true" />
           </Link>
         ))}

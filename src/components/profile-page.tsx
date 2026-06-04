@@ -18,7 +18,7 @@ export function ProfilePage() {
         <div className={styles.profileAvatar}>
           <Image src="/assets/images/bee-large.svg" alt="" width={158} height={228} />
         </div>
-        <p>Doris</p>
+        <p>Joey</p>
       </header>
 
       <Link className={styles.reportLink} href="/attendance-reports">
