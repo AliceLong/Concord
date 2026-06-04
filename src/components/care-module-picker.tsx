@@ -70,6 +70,7 @@ export function CareModulePicker({
               aria-pressed={selected}
               title={required ? "必選項目，已強制勾選" : selected ? "已選擇，點擊取消" : "點擊選擇"}
             >
+              <img className={styles.hexAsset} src="/assets/icons/Polygon%208.svg" alt="" aria-hidden="true" />
               <span className={styles.hexNumber}>【{module.number}】</span>
               <span className={styles.hexTitle}>{formatModuleTitle(module)}</span>
             </button>
